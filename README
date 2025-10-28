@@ -1,11 +1,14 @@
-                                    ABOUT
-                                    =====
+                            Variant: 16 (2, 1)
+
+
+                                   ABOUT
+                                   =====
 
 This repo is related to web development class.
 
 
-                                 INSTALLATION
-                                 ============
+                               INSTALLATION
+                               ============
 
 One have to install some software. Following dependencies can be obtained
 from package manager or their official site.
@@ -15,19 +18,13 @@ from package manager or their official site.
 
 To deploy this project one should follow these steps:
 
-    1) Clone the repository:
-        $ git clone https://github.com/gdcdec/weblab6
+    1) Clone `develop' branch of the repository:
+        $ git clone -b develop https://github.com/gdcdec/weblab6
 
-    2) Jump to weblab6 directory:
-        $ cd weblab6
+    2) Jump to backend directory:
+        $ cd weblab6/backend
 
-    3) Check out the `develop' branch:
-        $ git checkout develop
-
-    4) Jump to backend directory:
-        $ cd backend
-
-    5) Intall NodeJS dependencies specified in package.json:
+    3) Intall NodeJS dependencies specified in package.json:
         $ npm install --omit=dev
 
        --omit=dev flag is required to parry installation of packages
@@ -35,12 +32,12 @@ To deploy this project one should follow these steps:
        `npm install' installs all modules listed both in `dependecies'
        and `devDependencies' of package.json.
 
-    6) Run server in development mode:
+    3) Run server in development mode:
         $ npm run dev
 
 
-                                    USAGE
-                                    =====
+                                   USAGE
+                                   =====
 
 User interface is not implemented yet. To obtain current functionality
 one can use curl to make a request to the server:
