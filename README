@@ -44,3 +44,9 @@ one can use curl to make a request to the server:
 
     1) Get test response:
         $ curl -X GET localhost:3000
+
+    2) Get all users:
+        $ curl -X GET -H "Content-Type: application/json" -H "Accept: application/json" http://localhost:3000/users
+
+    3) Create new user:
+        $ curl -X POST -d '{ "name": "John Smith", "email": "john.smith@example.com" }' -H "Content-Type: application/json" http://localhost:3000/users
