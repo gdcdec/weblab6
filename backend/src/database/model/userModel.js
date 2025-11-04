@@ -1,5 +1,5 @@
-import { DataTypes } from "sequelize"
-import { sequelize } from "../config/db.js"
+import { DataTypes } from "sequelize";
+import { sequelize } from "../config/db.js";
 
 // Define the 'users' model
 const userModel = sequelize.define('users', {
@@ -29,4 +29,4 @@ sequelize.sync().then(() => {
    console.error("Unable to create table 'users': ", err);
 });
 
-export default userModel
+export default userModel;

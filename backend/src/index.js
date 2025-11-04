@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { connectDB } from './database/config/db.js';
 import { userRouter } from './router/userRouter.js'
+import { eventRouter } from './router/eventRouter.js'
 
 const DefaultHttpPortNumber = 3000;
 
@@ -13,7 +14,8 @@ app.use(express.json());
 
 app.use(cors());
 
-app.use(userRouter)
+app.use(userRouter);
+app.use(eventRouter);
 
 // Home page route
 app.get('/', (req, res) => {

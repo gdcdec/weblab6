@@ -15,6 +15,7 @@ from package manager or their official site.
 
     1) git (https://git-scm.com/);
     2) NodeJS (https://nodejs.org/);
+    3) PostgreSQL (https://www.postgresql.org/).
 
 To deploy this project one should follow these steps:
 
@@ -32,21 +33,49 @@ To deploy this project one should follow these steps:
        `npm install' installs all modules listed both in `dependecies'
        and `devDependencies' of package.json.
 
-    3) Run server in development mode:
+    4) Create `.env' file inside backend directory:
+
+        DB_NAME=
+        DB_USER=
+        DB_PASSWORD=
+        DB_HOST=
+        DB_PORT=
+        DATABASE_DIALECT=postgres
+
+       Fill in the right sides with necessary values.
+
+    5) Create database with the same name as mentioned in `.env' file.
+
+    6) Run server in development mode:
         $ npm run dev
 
 
                                    USAGE
                                    =====
 
-User interface is not implemented yet. To obtain current functionality
+Graphical user interface is not implemented yet. To obtain current functionality
 one can use curl to make a request to the server:
 
-    1) Get test response:
+    * Get test response:
         $ curl -X GET localhost:3000
 
-    2) Get all users:
+    * Get all users:
         $ curl -X GET -H "Content-Type: application/json" -H "Accept: application/json" http://localhost:3000/users
 
-    3) Create new user:
+    * Create new user:
         $ curl -X POST -d '{ "name": "John Smith", "email": "john.smith@example.com" }' -H "Content-Type: application/json" http://localhost:3000/users
+
+    * Get all events:
+        $ curl -X GET -H "Content-Type: application/json" -H "Accept: application/json" http://localhost:3000/events
+
+    * Get event by its id:
+        $ curl -X GET -H "Content-Type: application/json" -H "Accept: application/json" http://localhost:3000/events/<evenID>
+
+    * Create new event:
+        $ curl -X POST -d '{ "title": "New Event", "description": "Description for new event", "date": "2025-03-15T14:00:00.000Z", "createdBy": 1 }' -H "Content-Type: application/json" http://localhost:3000/events
+
+    * Update event by its id:
+        $ curl -X PUT -d '{ "title": "Updated Event", "description": "Description for updated event", "date": "2025-12-12T14:00:00.000Z", "createdBy": 1 }' -H "Content-Type: application/json" http://localhost:3000/events/<eventID>
+
+    * Delete event by its id:
+        $ curl -X DELETE -H "Content-Type: application/json" http://localhost:3000/events/<eventID>
