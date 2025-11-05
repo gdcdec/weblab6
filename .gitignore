@@ -9,3 +9,5 @@ eslint.config.js
 
 # vim editor's buffer (temporary file)
 *.swp
+
+package-lock.json
