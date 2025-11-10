@@ -19,6 +19,10 @@ const eventModel = sequelize.define('events', {
         type: DataTypes.STRING,
         allowNull: true,
     },
+    category: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     date: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -43,4 +47,4 @@ sequelize.sync().then(() => {
    console.error("Unable to create table 'events': ", err);
 });
 
-export default eventModel;
+export { eventModel };

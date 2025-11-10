@@ -1,4 +1,4 @@
-                            Variant: 16 (2, 1)
+              Variant: 16 (2 -- functional, 1 -- improvement)
 
 
                                    ABOUT
@@ -72,10 +72,10 @@ one can use curl to make a request to the server:
         $ curl -X GET -H "Content-Type: application/json" -H "Accept: application/json" http://localhost:3000/events/<evenID>
 
     * Create new event:
-        $ curl -X POST -d '{ "title": "New Event", "description": "Description for new event", "date": "2025-03-15T14:00:00.000Z", "createdBy": 1 }' -H "Content-Type: application/json" http://localhost:3000/events
+        $ curl -X POST -d '{ "title": "Event with category", "description": "Description for new event with category", "date": "2025-03-15T14:00:00.000Z", "createdBy": 1, "category": "amusement" }' -H "Content-Type: application/json" http://localhost:3000/events
 
     * Update event by its id:
-        $ curl -X PUT -d '{ "title": "Updated Event", "description": "Description for updated event", "date": "2025-12-12T14:00:00.000Z", "createdBy": 1 }' -H "Content-Type: application/json" http://localhost:3000/events/<eventID>
+        $ curl -X PUT -d '{ "title": "Updated Event", "description": "Description for updated event", "date": "2025-12-12T14:00:00.000Z", "createdBy": 1, "category": "education" }' -H "Content-Type: application/json" http://localhost:3000/events/<eventID>
 
     * Delete event by its id:
         $ curl -X DELETE -H "Content-Type: application/json" http://localhost:3000/events/<eventID>

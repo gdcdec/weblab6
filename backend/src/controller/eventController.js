@@ -1,4 +1,4 @@
-import eventModel from "../database/model/eventModel.js";
+import { eventModel } from "../database/model/eventModel.js";
 import userModel from "../database/model/userModel.js";
 
 
@@ -42,16 +42,16 @@ const getEvent = async (req, res, next) => {
 
 const createEvent = async (req, res, next) => {
     try {
-        const { title, description, date, createdBy } = req.body
+        const { title, description, date, createdBy, category } = req.body
 
-        if (!title || !date || !createdBy) {
+        if(!title || !date || !createdBy || !category) {
             return res.status(400).json({
-                message: "Fields 'title', 'date', 'createdBy' required"
+                message: "Fields 'title', 'date', 'createdBy', 'category' required"
             })
         }
 
         const eventDate = new Date(date)
-        if (isNaN(eventDate.getTime())) {
+        if(isNaN(eventDate.getTime())) {
             return res.status(400).json({
                 message: "invalid date format, required YYYY-MM-DDTHH:mm:ss.sssZ "
             })
@@ -61,7 +61,8 @@ const createEvent = async (req, res, next) => {
             title,
             description,
             date,
-            createdBy
+            createdBy,
+            category
         })
 
         return res.status(201).json(event)
@@ -73,7 +74,7 @@ const createEvent = async (req, res, next) => {
 const updateEvent = async (req, res, next) => {
     try {
         const { eventId } = req.params
-        const { title, description, date, createdBy, categoryId } = req.body
+        const { title, description, date, createdBy, category } = req.body
 
         let eventDate = null
 
@@ -97,6 +98,7 @@ const updateEvent = async (req, res, next) => {
         event.description = description || event.description;
         event.date = date || event.date;
         event.createdBy = createdBy || event.createdBy;
+        event.category = category || event.category;
         await event.save()
 
         return res.status(200).json(event)
