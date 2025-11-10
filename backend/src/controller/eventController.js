@@ -11,7 +11,7 @@ const getEvents = async (req, res, next) => {
     }
 }
 
-const getEvent = async (req, res, next) => {
+const getEventById = async (req, res, next) => {
     try {
         const { eventId } = req.params
 
@@ -141,4 +141,4 @@ const deleteEvent = async (req, res, next) => {
     }
 }
 
-export { getEvents, getEvent, createEvent, updateEvent, deleteEvent }
+export { getEvents, getEventById, createEvent, updateEvent, deleteEvent }
