@@ -15,10 +15,6 @@ const getEventById = async (req, res, next) => {
     try {
         const { eventId } = req.params
 
-        if(!eventId) {
-            return res.status(400).json({ message: "'eventId' required" })
-        }
-
         const filter = {}
         filter.id = eventId
 
@@ -35,6 +31,41 @@ const getEventById = async (req, res, next) => {
         }
 
         return res.status(200).json(event)
+    } catch(err) {
+        next(err)
+    }
+}
+
+const getEventByCat = async (req, res, next) => {
+    try {
+        const { eventCat } = req.params
+        let legal_category = false;
+
+        Object.keys(categories).forEach(cat => {
+            if(eventCat == cat) {
+                legal_category = true;
+            }
+        });
+
+        if(!legal_category) {
+            return res.status(400).json({
+                message: `Illegal category -- '${eventCat}'`
+            })
+        }
+
+        const events = await eventModel.findAll({
+            where: { category: eventCat },
+            include: [{
+                model: userModel,
+                attributes: ['id', 'name']
+            }]
+        })
+
+        if(!Object.keys(events).length) {
+            return res.status(400).json({ message: `Events with category '${eventCat}' not found` })
+        }
+
+        return res.status(200).json(events)
     } catch(err) {
         next(err)
     }
@@ -141,4 +172,11 @@ const deleteEvent = async (req, res, next) => {
     }
 }
 
-export { getEvents, getEventById, createEvent, updateEvent, deleteEvent }
+export {
+    getEvents,
+    getEventById,
+    getEventByCat,
+    createEvent,
+    updateEvent,
+    deleteEvent
+}

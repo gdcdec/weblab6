@@ -78,7 +78,10 @@ one can use curl to make a request to the server:
         $ curl -X GET -H "Content-Type: application/json" -H "Accept: application/json" http://localhost:3000/events
 
     * Get event by its id:
-        $ curl -X GET -H "Content-Type: application/json" -H "Accept: application/json" http://localhost:3000/events/<evenID>
+        $ curl -X GET -H "Content-Type: application/json" -H "Accept: application/json" http://localhost:3000/events/id/<eventId>
+
+    * Get events with specific category:
+        $ curl -X GET -H "Content-Type: application/json" -H "Accept: application/json" http://localhost:3000/events/cat/<eventCat>
 
     * Create new event:
         $ curl -X POST -d '{ "title": "Event with category", "description": "Description for new event with category", "date": "2025-03-15T14:00:00.000Z", "createdBy": 1, "category": "amusement" }' -H "Content-Type: application/json" http://localhost:3000/events

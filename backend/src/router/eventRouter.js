@@ -2,6 +2,7 @@ import Router from 'express'
 import {
     getEvents,
     getEventById,
+    getEventByCat,
     createEvent,
     updateEvent,
     deleteEvent
@@ -10,7 +11,8 @@ import {
 const eventRouter = new Router()
 
 eventRouter.get('/events', getEvents)
-eventRouter.get('/events/:eventId', getEventById)
+eventRouter.get('/events/id/:eventId', getEventById)
+eventRouter.get('/events/cat/:eventCat', getEventByCat)
 eventRouter.post('/events/', createEvent)
 eventRouter.put('/events/:eventId', updateEvent)
 eventRouter.delete('/events/:eventId', deleteEvent)
