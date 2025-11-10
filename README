@@ -28,10 +28,14 @@ To deploy this project one should follow these steps:
     3) Intall NodeJS dependencies specified in package.json:
         $ npm install --omit=dev
 
-       --omit=dev flag is required to parry installation of packages
-       specified in devDependencies section of package.json. By default,
-       `npm install' installs all modules listed both in `dependecies'
-       and `devDependencies' of package.json.
+       or just
+
+        $ npm install
+
+       `--omit=dev' flag is required to parry installation of packages
+       specified in `devDependencies' section of package.json. By default,
+       `npm install' installs all modules listed both in `dependecies' and
+       `devDependencies' of package.json.
 
     4) Create `.env' file inside backend directory:
 
@@ -46,8 +50,13 @@ To deploy this project one should follow these steps:
 
     5) Create database with the same name as mentioned in `.env' file.
 
-    6) Run server in development mode:
+    6) Run server:
         $ npm run dev
+
+       to run server in development mode with `nodemon' (`nodemon' won't be
+       installed with `npm install --omit=dev') or
+
+        $ npm run
 
 
                                    USAGE
