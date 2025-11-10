@@ -2,6 +2,13 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../config/db.js";
 import userModel from "./userModel.js"
 
+const categories = Object.freeze({
+    education: "education",
+    amusement: "amusement",
+    work: "work",
+    hobby: "hobby"
+});
+
 // Define 'events' model
 const eventModel = sequelize.define('events', {
     id: {
@@ -47,4 +54,4 @@ sequelize.sync().then(() => {
    console.error("Unable to create table 'events': ", err);
 });
 
-export { eventModel };
+export { eventModel, categories };

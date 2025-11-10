@@ -1,4 +1,4 @@
-import { eventModel } from "../database/model/eventModel.js";
+import { eventModel, categories } from "../database/model/eventModel.js";
 import userModel from "../database/model/userModel.js";
 
 
@@ -42,11 +42,24 @@ const getEvent = async (req, res, next) => {
 
 const createEvent = async (req, res, next) => {
     try {
+        let legal_category = false;
         const { title, description, date, createdBy, category } = req.body
 
         if(!title || !date || !createdBy || !category) {
             return res.status(400).json({
                 message: "Fields 'title', 'date', 'createdBy', 'category' required"
+            })
+        }
+
+        Object.keys(categories).forEach(cat => {
+            if(category == cat) {
+                legal_category = true;
+            }
+        });
+
+        if(!legal_category) {
+            return res.status(400).json({
+                message: `Illegal category -- '${category}'`
             })
         }
 
