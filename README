@@ -45,8 +45,11 @@ To deploy this project one should follow these steps:
         DB_HOST=
         DB_PORT=
         DATABASE_DIALECT=postgres
+        DAILY_LIMIT=
 
-       Fill in the right sides with necessary values.
+       Fill in the right sides with necessary values. 'DAILY_LIMIT' is
+       the number of new events that user can create in 24 hours. If the
+       limit exceeds, 403 code returned.
 
     5) Create database with the same name as mentioned in `.env' file.
 
