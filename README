@@ -83,6 +83,10 @@ one can use curl to make a request to the server:
     * Get events with specific category:
         $ curl -X GET -H "Content-Type: application/json" -H "Accept: application/json" http://localhost:3000/events/cat/<eventCat>
 
+      Only categories listed in 'backend/src/database/model/eventModel.js'
+      in 'categories' enumeration are permitted. Values of enumeration are
+      case sensitive.
+
     * Create new event:
         $ curl -X POST -d '{ "title": "Event with category", "description": "Description for new event with category", "date": "2025-03-15T14:00:00.000Z", "createdBy": 1, "category": "amusement" }' -H "Content-Type: application/json" http://localhost:3000/events
 
