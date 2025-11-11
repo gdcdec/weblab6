@@ -1,8 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import { connectDB } from './database/config/db.js';
-import { userRouter } from './router/userRouter.js'
-import { eventRouter } from './router/eventRouter.js'
+import { userRouter } from './router/userRouter.js';
+import { eventRouter } from './router/eventRouter.js';
+import { swaggerSpec } from './swagger.js';
+import swaggerUi from 'swagger-ui-express';
 
 const DefaultHttpPortNumber = 3000;
 
@@ -16,6 +18,7 @@ app.use(cors());
 
 app.use(userRouter);
 app.use(eventRouter);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Home page route
 app.get('/', (req, res) => {

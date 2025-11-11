@@ -95,3 +95,8 @@ one can use curl to make a request to the server:
 
     * Delete event by its id:
         $ curl -X DELETE -H "Content-Type: application/json" http://localhost:3000/events/<eventID>
+
+
+Swagger UI documentation available in web-browser by the following route:
+
+    http://localhost:3000/api-docs

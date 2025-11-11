@@ -1,7 +1,18 @@
 import { eventModel, categories } from "../database/model/eventModel.js";
 import userModel from "../database/model/userModel.js";
 
-
+/**
+ * @swagger
+ * /events:
+ *   get:
+ *     summary: Retrieve all events
+ *     tags: [Events]
+ *     responses:
+ *       200:
+ *         description: A list of all events
+ *       500:
+ *         description: Internal server error
+ */
 const getEvents = async (req, res, next) => {
     try {
         const events = await eventModel.findAll()
@@ -11,6 +22,20 @@ const getEvents = async (req, res, next) => {
     }
 }
 
+/**
+ * @swagger
+ * /events/id/{eventId}:
+ *   get:
+ *     summary: Get a specific event by ID
+ *     tags: [Events]
+ *     responses:
+ *       200:
+ *         description: Event details
+ *       400:
+ *         description: Event not found
+ *       500:
+ *         description: Internal server error
+ */
 const getEventById = async (req, res, next) => {
     try {
         const { eventId } = req.params
@@ -36,6 +61,20 @@ const getEventById = async (req, res, next) => {
     }
 }
 
+/**
+ * @swagger
+ * /events/cat/{eventCat}:
+ *   get:
+ *     summary: Get events by category
+ *     tags: [Events]
+ *     responses:
+ *       200:
+ *         description: List of events in the specified category
+ *       400:
+ *         description: Illegal category or no events found
+ *       500:
+ *         description: Internal server error
+ */
 const getEventByCat = async (req, res, next) => {
     try {
         const { eventCat } = req.params
@@ -71,6 +110,43 @@ const getEventByCat = async (req, res, next) => {
     }
 }
 
+/**
+ * @swagger
+ * /events:
+ *   post:
+ *     summary: Create a new event
+ *     tags: [Events]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               date:
+ *                 type: string
+ *                 format: date-time
+ *               createdBy:
+ *                 type: integer
+ *               category:
+ *                 type: string
+ *             required:
+ *               - title
+ *               - date
+ *               - createdBy
+ *               - category
+ *     responses:
+ *       201:
+ *         description: Event created successfully
+ *       400:
+ *         description: Missing required fields, illegal category, or invalid date format
+ *       500:
+ *         description: Internal server error
+ */
 const createEvent = async (req, res, next) => {
     try {
         let legal_category = false;
@@ -115,6 +191,38 @@ const createEvent = async (req, res, next) => {
     }
 }
 
+/**
+ * @swagger
+ * /events/{eventId}:
+ *   put:
+ *     summary: Update an existing event
+ *     tags: [Events]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               date:
+ *                 type: string
+ *                 format: date-time
+ *               createdBy:
+ *                 type: integer
+ *               category:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Event updated successfully
+ *       400:
+ *         description: Event not found or invalid date format
+ *       500:
+ *         description: Internal server error
+ */
 const updateEvent = async (req, res, next) => {
     try {
         const { eventId } = req.params
@@ -151,9 +259,20 @@ const updateEvent = async (req, res, next) => {
     }
 }
 
-
-
-
+/**
+ * @swagger
+ * /events/{eventId}:
+ *   delete:
+ *     summary: Delete an event
+ *     tags: [Events]
+ *     responses:
+ *       200:
+ *         description: Event deleted successfully
+ *       400:
+ *         description: Event not found
+ *       500:
+ *         description: Internal server error
+ */
 const deleteEvent = async (req, res, next) => {
     try {
         const { eventId } = req.params
