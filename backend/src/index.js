@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import morgan from 'morgan';
 import { connectDB } from './database/config/db.js';
 import { userRouter } from './router/userRouter.js';
 import { eventRouter } from './router/eventRouter.js';
@@ -15,6 +16,9 @@ const app = express();
 app.use(express.json());
 
 app.use(cors());
+
+// Custom format of logging
+app.use(morgan(':method :url :status :response-time ms'));
 
 app.use(userRouter);
 app.use(eventRouter);
