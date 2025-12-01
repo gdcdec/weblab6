@@ -172,14 +172,14 @@ const createEvent = async (req, res, next) => {
 
         if(!legal_category) {
             return res.status(400).json({
-                message: `--- Illegal category -- '${category}'`
+                message: `Illegal category -- '${category}'`
             })
         }
 
         const eventDate = new Date(date)
         if(isNaN(eventDate.getTime())) {
             return res.status(400).json({
-                message: "-- Invalid date format, required YYYY-MM-DDTHH:mm:ss.sssZ "
+                message: "Invalid date format, required YYYY-MM-DDTHH:mm:ss.sssZ "
             })
         }
 
@@ -200,7 +200,7 @@ const createEvent = async (req, res, next) => {
         // Check if the limit has been exceeded
         if (count > dailyLimit) {
             return res.status(403).json({
-                message: `--- Daily creation limit of '${dailyLimit}' has been reached. Count is ${count}`
+                message: `Daily creation limit of '${dailyLimit}' has been reached. Count is ${count}`
             })
         }
 

@@ -29,6 +29,10 @@ app.get('/', (req, res) => {
     res.json({message: "Hello, world!"});
 });
 
+app.use((req, res) => {
+    res.status(404).json({ "message": "Not found" });
+});
+
 // Start server
 app.listen(DefaultHttpPortNumber, (err) => {
     // connect to the database  before starting the server
