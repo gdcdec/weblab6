@@ -33,6 +33,10 @@ app.use((req, res) => {
     res.status(404).json({ "message": "Not found" });
 });
 
+app.use( ( err, req, res, next ) => {
+    res.status(500).json({ "message": "Something went wrong" } );
+});
+
 // Start server
 app.listen(DefaultHttpPortNumber, (err) => {
     // connect to the database  before starting the server
