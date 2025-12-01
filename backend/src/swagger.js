@@ -17,7 +17,7 @@ const options = {
     },
     // looks for configuration in specified directories.
     // path from the directory where 'package.json' resides
-    apis: ['src/controller/*.js'],
+    apis: ['src/controller/*.js', 'src/database/model/*.js'],
 }
 
 const swaggerSpec = swaggerJsdoc(options)

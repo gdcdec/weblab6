@@ -1,6 +1,50 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/db.js";
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       description: User entity representing a person in the system
+ *       properties:
+ *         id:
+ *           type: integer
+ *           format: int64
+ *           minimum: 0
+ *           description: Auto-incremented unique identifier for the user
+ *           example: 1
+ *           readOnly: true
+ *         name:
+ *           type: string
+ *           description: Full name of the user
+ *           minLength: 1
+ *           maxLength: 255
+ *           example: "John Doe"
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Unique email address of the user
+ *           maxLength: 255
+ *           example: "john.doe@example.com"
+ *         createdAt:
+ *           type: string
+ *
+ *           format: date-time
+ *           description: Timestamp when the user was created
+ *           example: "2023-01-01T10:00:00.000Z"
+ *           readOnly: true
+ *       required:
+ *         - name
+ *         - email
+ *       example:
+ *         id: 1
+ *         name: "John Doe"
+ *         email: "john.doe@example.com"
+ *         createdAt: "2023-01-01T10:00:00.000Z"
+ */
+
 // Define the 'users' model
 const userModel = sequelize.define('users', {
     id: {
