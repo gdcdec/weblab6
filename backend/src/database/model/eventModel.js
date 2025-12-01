@@ -6,7 +6,8 @@ const categories = Object.freeze({
     education: "education",
     amusement: "amusement",
     work: "work",
-    hobby: "hobby"
+    hobby: "hobby",
+    other: "other"
 });
 
 // Define 'events' model
