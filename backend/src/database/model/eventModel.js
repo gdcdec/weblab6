@@ -12,7 +12,7 @@ const categories = Object.freeze({
 // Define 'events' model
 const eventModel = sequelize.define('events', {
     id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.INTEGER.UNSIGNED,
         primaryKey: true,
         unique: true,
         autoIncrement: true,
