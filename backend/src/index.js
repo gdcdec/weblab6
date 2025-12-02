@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import { connectDB } from './database/config/db.js';
 import { userRouter } from './router/userRouter.js';
 import { eventRouter } from './router/eventRouter.js';
+import { authRouter } from './router/authRouter.js';
 import { swaggerSpec } from './swagger.js';
 import swaggerUi from 'swagger-ui-express';
 
@@ -21,6 +22,7 @@ app.use(cors());
 app.use(morgan(':method :url :status :response-time ms'));
 
 app.use(userRouter);
+app.use(authRouter);
 app.use(eventRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
