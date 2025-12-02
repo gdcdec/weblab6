@@ -1,4 +1,6 @@
 import userModel from "../database/model/userModel.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 /**
  * @swagger
@@ -169,4 +171,110 @@ const getUsers = async (req, res, next) => {
     }
 }
 
-export { getUsers, createUser }
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     LoginRequest:
+ *       type: object
+ *       required:
+ *         - email
+ *         - password
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: User's email address
+ *           example: "john.doe@example.com"
+ *         password:
+ *           type: string
+ *           format: password
+ *           description: User's password
+ *           example: "MySecurePassword123!"
+ *       example:
+ *         email: "john.doe@example.com"
+ *         password: "MySecurePassword123!"
+ *
+ *     LoginResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: Success message
+ *           example: "Login successful"
+ *         token:
+ *           type: string
+ *           description: JWT token for authenticated requests
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTYxNzU5MDQwMCwiZXhwIjoxNjE3NTk0MDAwfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+ * /login:
+ *   post:
+ *     summary: Authenticate user and get JWT token
+ *     description: |
+ *       Authenticates a user by email and password.
+ *
+ *       Upon successful authentication, returns a JWT token that can be used to access protected endpoints.
+ *       The token expires in 1 hour.
+ *     tags: [Authentication]
+ *     operationId: loginUserAlt
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginResponse'
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+const loginUser = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "email and password required"
+            });
+        }
+
+        // Find the user by email
+        const user = await userModel.findOne({ where: { email } });
+        if (!user) {
+            return res.status(401).json({
+                message: "Invalid email or password"
+            });
+        }
+
+        // Check password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({
+                message: "Invalid email or password"
+            });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign({
+            id: user.id,
+            email: user.email
+        }, process.env.JWT_SECRET, {
+            expiresIn: '1h' // Token expires in 1 hour
+        });
+
+        return res.status(200).json({
+            message: "Login successful", token
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
+export { getUsers, createUser, loginUser }
