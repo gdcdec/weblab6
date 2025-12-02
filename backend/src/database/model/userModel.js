@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../config/db.js";
+import bcrypt from "bcryptjs";
 
 /**
  * @swagger
@@ -8,6 +9,10 @@ import { sequelize } from "../config/db.js";
  *     User:
  *       type: object
  *       description: User entity representing a person in the system
+ *       required:
+ *         - name
+ *         - email
+ *         - password
  *       properties:
  *         id:
  *           type: integer
@@ -28,21 +33,23 @@ import { sequelize } from "../config/db.js";
  *           description: Unique email address of the user
  *           maxLength: 255
  *           example: "john.doe@example.com"
+ *         password:
+ *           type: string
+ *           format: password
+ *           description: User's password (will be hashed before storage)
+ *           example: "MySecurePassword123!"
+ *           minLength: 6
+ *           writeOnly: true
  *         createdAt:
  *           type: string
- *
  *           format: date-time
  *           description: Timestamp when the user was created
  *           example: "2023-01-01T10:00:00.000Z"
  *           readOnly: true
- *       required:
- *         - name
- *         - email
  *       example:
- *         id: 1
  *         name: "John Doe"
  *         email: "john.doe@example.com"
- *         createdAt: "2023-01-01T10:00:00.000Z"
+ *         password: "MySecurePassword123!"
  */
 
 // Define the 'users' model
@@ -64,8 +71,16 @@ const userModel = sequelize.define('users', {
         allowNull: false,
         validate: { isEmail: true }
     },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     createdAt: DataTypes.DATE
 })
+
+userModel.beforeCreate(async (user) => {
+    user.password = await bcrypt.hash(user.password, 10);
+});
 
 sequelize.sync().then(() => {
    console.log("Table 'users' created successfully!");
