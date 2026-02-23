@@ -1,12 +1,12 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.js";
+import { sequelize } from "../../config/db.js";
 import userModel from "./userModel.js"
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     Event:
+ *     events:
  *       type: object
  *       description: Event entity representing an activity or occasion
  *       properties:
@@ -44,18 +44,6 @@ import userModel from "./userModel.js"
  *           format: int64
  *           description: ID of the user who created this event
  *           example: 1
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: Timestamp when the event was created
- *           example: "2024-01-10T14:30:00.000Z"
- *           readOnly: true
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           description: Timestamp when the event was last updated
- *           example: "2024-01-15T10:00:00.000Z"
- *           readOnly: true
  *       required:
  *         - title
  *         - category
@@ -68,10 +56,7 @@ import userModel from "./userModel.js"
  *         category: "education"
  *         date: "2024-05-15T09:00:00.000Z"
  *         createdBy: 1
- *         createdAt: "2024-01-10T14:30:00.000Z"
- *         updatedAt: "2024-01-15T10:00:00.000Z"
  */
-
 const categories = Object.freeze({
     education: "education",
     amusement: "amusement",

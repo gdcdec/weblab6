@@ -4,52 +4,51 @@ import jwt from "jsonwebtoken";
 
 /**
  * @swagger
- * /users:
+ * /register:
  *   post:
- *     summary: Create a new user
- *     description: Register a new user with name, email, and password. The password will be automatically hashed before storage.
- *     tags: [Users]
+ *     tags: [Public]
+ *     summary: Register a new user
+ *     description: |
+ *       Creates a new user account. This endpoint is publicly accessible.
+ *
+ *       ### Password Requirements:
+ *       - Must be at least 6 characters long
+ *       - Will be automatically hashed using bcrypt before storage
+ *
+ *       ### Email Validation:
+ *       - Must be a valid email format (e.g., user@example.com)
+ *       - Must be unique (cannot already exist in the system)
+ *     operationId: registerUser
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UserCreateRequest'
+ *             $ref: '#/components/schemas/users'
  *           examples:
- *             validRequest:
+ *             validRegistration:
  *               summary: Valid user registration
  *               value:
- *                 name: "Alice Johnson"
- *                 email: "alice.johnson@example.com"
- *                 password: "SecurePassword456!"
- *             missingFields:
- *               summary: Missing required fields
- *               value:
- *                 name: "Alice Johnson"
- *                 email: "alice.johnson@example.com"
- *             invalidEmail:
- *               summary: Invalid email format
- *               value:
- *                 name: "Alice Johnson"
- *                 email: "invalid-email"
- *                 password: "SecurePassword456!"
+ *                 name: "Jane Doe"
+ *                 email: "jane.doe@example.com"
+ *                 password: "SecurePass123!"
  *     responses:
  *       201:
  *         description: User created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/UserResponse'
+ *               $ref: '#/components/schemas/users'
  *             examples:
- *               successResponse:
- *                 summary: User created successfully
+ *               success:
+ *                 summary: User created
  *                 value:
- *                   id: 3
- *                   name: "Alice Johnson"
- *                   email: "alice.johnson@example.com"
- *                   createdAt: "2023-01-03T14:30:00.000Z"
+ *                   id: 5
+ *                   name: "Jane Doe"
+ *                   email: "jane.doe@example.com"
+ *                   createdAt: "2023-01-05T14:30:00.000Z"
  *       400:
- *         description: Bad request - missing required fields or user already exists
+ *         description: Bad request – validation failed
  *         content:
  *           application/json:
  *             examples:
@@ -57,16 +56,24 @@ import jwt from "jsonwebtoken";
  *                 summary: Missing required fields
  *                 value:
  *                   message: "name, email and password required"
- *               duplicateEmail:
- *                 summary: Email already exists
- *                 value:
- *                   message: "user already exists"
  *               invalidEmail:
  *                 summary: Invalid email format
  *                 value:
  *                   message: "Invalid email format"
+ *               shortPassword:
+ *                 summary: Password too short
+ *                 value:
+ *                   message: "Password must be at least 6 characters long"
+ *               duplicateUser:
+ *                 summary: User already exists
+ *                 value:
+ *                   message: "User already exists"
  *       500:
  *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "An unexpected error occurred"
  */
 const createUser = async (req, res, next) => {
     try {
@@ -129,8 +136,26 @@ const createUser = async (req, res, next) => {
  * /users:
  *   get:
  *     summary: Get all users
- *     description: Retrieve a list of all registered users. Passwords are excluded from the response for security.
- *     tags: [Users]
+ *     description: |
+ *       Retrieves a list of all registered users. This endpoint is **private** and requires a valid JWT token.
+ *
+ *       ### Authentication Requirements:
+ *       - A valid JWT token must be provided in the `Authorization` header using the `Bearer` scheme.
+ *       - Example header: `Authorization: Bearer <your_token_here>`
+ *
+ *       ### Security Notes:
+ *       - Passwords are **never** returned in the response.
+ *       - Only authenticated users can access this endpoint.
+ *
+ *       ### Example cURL Request:
+ *       ```bash
+ *       curl -X GET "http://localhost:3000/users" \
+ *         -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsImlhdCI6MTYxNjIzOTAyMiwiZXhwIjoxNjE2MjQyNjIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+ *       ```
+ *     tags: [Private]
+ *     security:
+ *       - BearerAuth: []
+ *     operationId: getUsers
  *     responses:
  *       200:
  *         description: List of users retrieved successfully
@@ -139,25 +164,38 @@ const createUser = async (req, res, next) => {
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/UserResponse'
+ *                 $ref: '#/components/schemas/users'
  *             examples:
  *               usersList:
  *                 summary: Example list of users
  *                 value:
  *                   - id: 1
- *                     name: "John Doe"
- *                     email: "john.doe@example.com"
+ *                     name: "Admin User"
+ *                     email: "admin@example.com"
  *                     createdAt: "2023-01-01T10:00:00.000Z"
  *                   - id: 2
- *                     name: "Jane Smith"
- *                     email: "jane.smith@example.com"
+ *                     name: "John Doe"
+ *                     email: "john.doe@example.com"
  *                     createdAt: "2023-01-02T14:30:00.000Z"
- *                   - id: 3
- *                     name: "Alice Johnson"
- *                     email: "alice.johnson@example.com"
- *                     createdAt: "2023-01-03T09:15:00.000Z"
+ *       401:
+ *         description: Unauthorized – missing or invalid token
+ *         content:
+ *           application/json:
+ *             examples:
+ *               noToken:
+ *                 summary: No token provided
+ *                 value:
+ *                   message: "Unauthorized"
+ *               invalidToken:
+ *                 summary: Invalid token
+ *                 value:
+ *                   message: "Unauthorized"
  *       500:
  *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "An unexpected error occurred"
  */
 const getUsers = async (req, res, next) => {
     try {
@@ -173,68 +211,72 @@ const getUsers = async (req, res, next) => {
 
 /**
  * @swagger
- * components:
- *   schemas:
- *     LoginRequest:
- *       type: object
- *       required:
- *         - email
- *         - password
- *       properties:
- *         email:
- *           type: string
- *           format: email
- *           description: User's email address
- *           example: "john.doe@example.com"
- *         password:
- *           type: string
- *           format: password
- *           description: User's password
- *           example: "MySecurePassword123!"
- *       example:
- *         email: "john.doe@example.com"
- *         password: "MySecurePassword123!"
- *
- *     LoginResponse:
- *       type: object
- *       properties:
- *         message:
- *           type: string
- *           description: Success message
- *           example: "Login successful"
- *         token:
- *           type: string
- *           description: JWT token for authenticated requests
- *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huLmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTYxNzU5MDQwMCwiZXhwIjoxNjE3NTk0MDAwfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
  * /login:
  *   post:
+ *     tags: [Authentication]
  *     summary: Authenticate user and get JWT token
  *     description: |
  *       Authenticates a user by email and password.
  *
  *       Upon successful authentication, returns a JWT token that can be used to access protected endpoints.
  *       The token expires in 1 hour.
- *     tags: [Authentication]
- *     operationId: loginUserAlt
+ *     operationId: loginUser
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/LoginRequest'
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "john.doe@example.com"
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: "MySecurePassword123!"
+ *           examples:
+ *             validLogin:
+ *               summary: Valid credentials
+ *               value:
+ *                 email: "john.doe@example.com"
+ *                 password: "MySecurePassword123!"
  *     responses:
  *       200:
  *         description: Login successful
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/LoginResponse'
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Login successful"
+ *                 token:
+ *                   type: string
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *       400:
- *         description: Bad request
+ *         description: Bad request – missing email or password
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "email and password required"
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized – invalid email or password
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Invalid email or password"
  *       500:
  *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "An unexpected error occurred"
  */
 const loginUser = async (req, res, next) => {
     try {

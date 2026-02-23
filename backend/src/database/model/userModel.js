@@ -1,12 +1,12 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.js";
+import { sequelize } from "../../config/db.js";
 import bcrypt from "bcryptjs";
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     User:
+ *     users:
  *       type: object
  *       description: User entity representing a person in the system
  *       required:
@@ -47,12 +47,11 @@ import bcrypt from "bcryptjs";
  *           example: "2023-01-01T10:00:00.000Z"
  *           readOnly: true
  *       example:
+ *         id: 1
  *         name: "John Doe"
  *         email: "john.doe@example.com"
- *         password: "MySecurePassword123!"
+ *         createdAt: "2023-01-01T10:00:00.000Z"
  */
-
-// Define the 'users' model
 const userModel = sequelize.define('users', {
     id: {
         type: DataTypes.INTEGER.UNSIGNED,

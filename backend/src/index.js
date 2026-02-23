@@ -1,12 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-import { connectDB } from './database/config/db.js';
-import { userRouter } from './router/userRouter.js';
-import { eventRouter } from './router/eventRouter.js';
+import { connectDB } from './config/db.js';
+import { publicRouter } from './router/publicRouter.js';
+import { privateRouter } from './router/privateRouter.js';
 import { authRouter } from './router/authRouter.js';
 import { swaggerSpec } from './swagger.js';
 import swaggerUi from 'swagger-ui-express';
+import { passport } from './config/passport.js';
 
 const DefaultHttpPortNumber = 3000;
 
@@ -21,9 +22,11 @@ app.use(cors());
 // Custom format of logging
 app.use(morgan(':method :url :status :response-time ms'));
 
-app.use(userRouter);
+app.use(passport.initialize());
+
+app.use(publicRouter);
+app.use(privateRouter);
 app.use(authRouter);
-app.use(eventRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Home page route
@@ -35,9 +38,9 @@ app.use((req, res) => {
     res.status(404).json({ "message": "Not found" });
 });
 
-app.use( ( err, req, res, next ) => {
-    res.status(500).json({ "message": "Something went wrong" } );
-});
+//app.use( ( err, req, res, next ) => {
+//    res.status(500).json({ "message": "Something went wrong" } );
+//});
 
 // Start server
 app.listen(DefaultHttpPortNumber, (err) => {

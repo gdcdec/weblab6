@@ -1,4 +1,4 @@
-              Variant: 16 (2 -- functional, 1 -- improvement)
+                                Variant: 17
 
 
                                    ABOUT
@@ -82,10 +82,10 @@ one can use curl to make a request to the server:
         $ curl -X GET localhost:3000
 
     * Get all users:
-        $ curl -X GET -H "Content-Type: application/json" -H "Accept: application/json" http://localhost:3000/users
+        $ curl -X GET -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer <token>" http://localhost:3000/users
 
     * Create new user:
-        $ curl -X POST -d '{ "name": "John Smith", "email": "john.smith@example.com" }' -H "Content-Type: application/json" http://localhost:3000/users
+        $ curl -X POST -d '{ "name": "John Smith", "email": "john.smith@example.com", "password": "MySecurePassword123!" }' -H "Content-Type: application/json" -H "Authorization: Bearer <token>" http://localhost:3000/users
 
     * Get all events:
         $ curl -X GET -H "Content-Type: application/json" -H "Accept: application/json" http://localhost:3000/events
@@ -101,13 +101,13 @@ one can use curl to make a request to the server:
       case sensitive.
 
     * Create new event:
-        $ curl -X POST -d '{ "title": "Event with category", "description": "Description for new event with category", "date": "2025-03-15T14:00:00.000Z", "createdBy": 1, "category": "amusement" }' -H "Content-Type: application/json" http://localhost:3000/events
+        $ curl -X POST -d '{ "title": "Event with category", "description": "Description for new event with category", "date": "2025-03-15T14:00:00.000Z", "createdBy": 1, "category": "amusement" }' -H "Content-Type: application/json" -H "Authorization: Bearer <token>" http://localhost:3000/events
 
     * Update event by its id:
-        $ curl -X PUT -d '{ "title": "Updated Event", "description": "Description for updated event", "date": "2025-12-12T14:00:00.000Z", "createdBy": 1, "category": "education" }' -H "Content-Type: application/json" http://localhost:3000/events/<eventID>
+        $ curl -X PUT -d '{ "title": "Updated Event", "description": "Description for updated event", "date": "2025-12-12T14:00:00.000Z", "createdBy": 1, "category": "education" }' -H "Content-Type: application/json" -H "Authorization: Bearer <token>" http://localhost:3000/events/id/<eventID>
 
     * Delete event by its id:
-        $ curl -X DELETE -H "Content-Type: application/json" http://localhost:3000/events/<eventID>
+        $ curl -X DELETE -H "Content-Type: application/json" -H "Authorization: Bearer <token>" http://localhost:3000/events/id/<eventID>
 
 
 Swagger UI documentation available in web-browser by the following route:

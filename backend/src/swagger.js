@@ -1,5 +1,16 @@
 import swaggerJsdoc from 'swagger-jsdoc'
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Authentication
+ *     description: Routes for registration and login (public)
+ *   - name: Public
+ *     description: Publicly accessible event routes
+ *   - name: Private
+ *     description: Routes that require JWT authentication
+ */
+
 const options = {
     definition: {
         openapi: '3.0.0',
@@ -17,7 +28,7 @@ const options = {
     },
     // looks for configuration in specified directories.
     // path from the directory where 'package.json' resides
-    apis: ['src/controller/*.js', 'src/database/model/*.js'],
+    apis: ['src/controller/*.js', 'src/database/model/*.js', 'src/swagger.js'],
 }
 
 const swaggerSpec = swaggerJsdoc(options)
