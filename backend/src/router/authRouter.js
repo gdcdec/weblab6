@@ -1,9 +1,9 @@
 import Router from 'express';
-import { loginUser } from '../controller/userController.js';
+import { loginUser, refreshToken } from '../controller/userController.js';
 
 const authRouter = new Router();
 
-//authRouter.post("/register", createUser);
+authRouter.post("/refresh", refreshToken);
 authRouter.post("/login", loginUser);
 
 export { authRouter }

@@ -1,6 +1,10 @@
 import userModel from "../database/model/userModel.js";
+import refreshTokensModel from '../database/model/refreshTokensModel.js';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from 'crypto';
+import { Op } from 'sequelize';
+import { sequelize } from '../config/db.js';
 
 /**
  * @swagger
@@ -214,12 +218,12 @@ const getUsers = async (req, res, next) => {
  * /login:
  *   post:
  *     tags: [Authentication]
- *     summary: Authenticate user and get JWT token
+ *     summary: Authenticate user and get JWT access + refresh tokens
  *     description: |
  *       Authenticates a user by email and password.
  *
- *       Upon successful authentication, returns a JWT token that can be used to access protected endpoints.
- *       The token expires in 1 hour.
+ *       Upon successful authentication, returns both an **access token** (short-lived) and a **refresh token** (long-lived).
+ *       The access token is used to access protected endpoints; the refresh token is used to obtain a new access token when it expires.
  *     operationId: loginUser
  *     requestBody:
  *       required: true
@@ -256,9 +260,14 @@ const getUsers = async (req, res, next) => {
  *                 message:
  *                   type: string
  *                   example: "Login successful"
- *                 token:
+ *                 accessToken:
  *                   type: string
+ *                   description: JWT access token (expires in 15 minutes by default)
  *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 refreshToken:
+ *                   type: string
+ *                   description: Secure random refresh token (stored in DB, expires in 7 days by default)
+ *                   example: "a1b2c3d4e5f67890abcdef1234567890abcdef12"
  *       400:
  *         description: Bad request – missing email or password
  *         content:
@@ -303,20 +312,143 @@ const loginUser = async (req, res, next) => {
             });
         }
 
-        // Generate JWT token
-        const token = jwt.sign({
-            id: user.id,
-            email: user.email
-        }, process.env.JWT_SECRET, {
-            expiresIn: '1h' // Token expires in 1 hour
+        // Generate access token
+        const accessToken = jwt.sign(
+            { id: user.id, email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
+        );
+
+        // Generate refresh token (secure random string)
+        const refreshToken = crypto.randomBytes(40).toString('hex');
+        const refreshExpiry = new Date();
+        refreshExpiry.setDate(refreshExpiry.getDate() + (parseInt(process.env.REFRESH_TOKEN_DAYS) || 7));
+
+        // Store refresh token in database
+        await refreshTokensModel.create({
+            userId: user.id,
+            token: refreshToken,
+            expiresAt: refreshExpiry
         });
 
         return res.status(200).json({
-            message: "Login successful", token
+            message: "Login successful",
+            accessToken,
+            refreshToken
         });
     } catch (err) {
         next(err);
     }
-}
+};
 
-export { getUsers, createUser, loginUser }
+/**
+ * @swagger
+ * /refresh:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Get a new access token using a refresh token
+ *     description: |
+ *       Exchanges a valid refresh token for a new access token.
+ *       This endpoint also **rotates** the refresh token for security: the old refresh token is invalidated,
+ *       and a new refresh token is issued. The client should store the new refresh token and use it for future refreshes.
+ *     operationId: refreshAccessToken
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 description: The refresh token obtained during login or a previous refresh
+ *                 example: "a1b2c3d4e5f67890abcdef1234567890abcdef12"
+ *     responses:
+ *       200:
+ *         description: Tokens refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: New JWT access token
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *                 refreshToken:
+ *                   type: string
+ *                   description: New refresh token (old one is invalidated)
+ *                   example: "f6e5d4c3b2a19876543210fedcba9876543210fe"
+ *       400:
+ *         description: Bad request – missing refresh token
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Refresh token required"
+ *       401:
+ *         description: Unauthorized – invalid or expired refresh token
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Invalid or expired refresh token"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "An unexpected error occurred"
+ */
+const refreshToken = async (req, res, next) => {
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) {
+            return res.status(400).json({ message: "Refresh token required" });
+        }
+
+        // Find token in DB that is not expired
+        const tokenRecord = await refreshTokensModel.findOne({
+            where: {
+                token: refreshToken,
+                expiresAt: { [Op.gt]: new Date() } // still valid
+            },
+            include: [{ model: userModel, attributes: ['id', 'email'] }]
+        });
+
+        if (!tokenRecord) {
+            return res.status(401).json({ message: "Invalid or expired refresh token" });
+        }
+
+        // Generate new access token
+        const newAccessToken = jwt.sign(
+            { id: tokenRecord.user.id, email: tokenRecord.user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
+        );
+
+        // Generate new refresh token (rotation)
+        const newRefreshToken = crypto.randomBytes(40).toString('hex');
+        const newExpiry = new Date();
+        newExpiry.setDate(newExpiry.getDate() + (parseInt(process.env.REFRESH_TOKEN_DAYS) || 7));
+
+        // Use a transaction to delete old token and create new one atomically
+        await sequelize.transaction(async (t) => {
+            await refreshTokensModel.destroy({ where: { id: tokenRecord.id }, transaction: t });
+            await refreshTokensModel.create({
+                userId: tokenRecord.userId,
+                token: newRefreshToken,
+                expiresAt: newExpiry
+            }, { transaction: t });
+        });
+
+        return res.status(200).json({
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+export { getUsers, createUser, loginUser, refreshToken };
