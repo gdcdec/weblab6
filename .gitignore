@@ -4,9 +4,6 @@ node_modules/
 # dotenv environment variable files
 .env
 
-# linter configuration file
-eslint.config.js
-
 # vim editor's buffer (temporary file)
 *.swp
 

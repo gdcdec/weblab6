@@ -3,6 +3,7 @@ import passport from 'passport';
 import User from '@models/userModel.js';
 import dotenv from 'dotenv';
 import { Request, Response, NextFunction } from 'express';
+import { type JwtPayload } from 'jsonwebtoken'; // ← type-only import
 
 dotenv.config();
 
@@ -12,7 +13,7 @@ const options: StrategyOptions = {
 };
 
 passport.use(
-  new JwtStrategy(options, async (payload: any, done) => {
+  new JwtStrategy(options, async (payload: JwtPayload, done) => {
     try {
       const user = await User.findByPk(payload.id);
       if (user) {
@@ -26,12 +27,13 @@ passport.use(
 );
 
 const requireJwt = (req: Request, res: Response, next: NextFunction): void => {
-  passport.authenticate('jwt', { session: false }, (err: any, user: Express.User | false) => {
+  passport.authenticate('jwt', { session: false }, (err: unknown, user: Express.User | false) => {
     if (err) {
       console.error(err);
+      const message = err instanceof Error ? err.message : 'Unknown error';
       return res.status(500).json({
         message: 'Authentication error',
-        error: err.message,
+        error: message, // ← now using the safe message variable
       });
     }
     if (!user) {

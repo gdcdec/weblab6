@@ -323,7 +323,9 @@ const loginUser = async (req: Request, res: Response, next: NextFunction): Promi
 
     const refreshToken = crypto.randomBytes(40).toString('hex');
     const refreshExpiry = new Date();
-    refreshExpiry.setDate(refreshExpiry.getDate() + (parseInt(process.env.REFRESH_TOKEN_DAYS as string, 10) || 7));
+    refreshExpiry.setDate(
+      refreshExpiry.getDate() + (parseInt(process.env.REFRESH_TOKEN_DAYS as string, 10) || 7)
+    );
 
     await RefreshToken.create({
       userId: user.id,
@@ -433,7 +435,9 @@ const refreshToken = async (req: Request, res: Response, next: NextFunction): Pr
 
     const newRefreshToken = crypto.randomBytes(40).toString('hex');
     const newExpiry = new Date();
-    newExpiry.setDate(newExpiry.getDate() + (parseInt(process.env.REFRESH_TOKEN_DAYS as string, 10) || 7));
+    newExpiry.setDate(
+      newExpiry.getDate() + (parseInt(process.env.REFRESH_TOKEN_DAYS as string, 10) || 7)
+    );
 
     await sequelize.transaction(async (t) => {
       await RefreshToken.destroy({ where: { id: tokenRecord.id }, transaction: t });

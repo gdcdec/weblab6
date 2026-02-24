@@ -10,9 +10,15 @@ interface RefreshTokenAttributes {
   createdAt: Date;
 }
 
-interface RefreshTokenCreationAttributes extends Optional<RefreshTokenAttributes, 'id' | 'createdAt'> {}
+interface RefreshTokenCreationAttributes extends Optional<
+  RefreshTokenAttributes,
+  'id' | 'createdAt'
+> {}
 
-class RefreshToken extends Model<RefreshTokenAttributes, RefreshTokenCreationAttributes> implements RefreshTokenAttributes {
+class RefreshToken
+  extends Model<RefreshTokenAttributes, RefreshTokenCreationAttributes>
+  implements RefreshTokenAttributes
+{
   public id!: number;
   public userId!: number;
   public token!: string;
@@ -102,10 +108,13 @@ RefreshToken.init(
 User.hasMany(RefreshToken, { foreignKey: 'userId', onDelete: 'CASCADE' });
 RefreshToken.belongsTo(User, { foreignKey: 'userId' });
 
-sequelize.sync().then(() => {
-  console.log("Table 'refreshTokens' created successfully!");
-}).catch((err) => {
-  console.error("Unable to create table 'refreshTokens': ", err);
-});
+sequelize
+  .sync()
+  .then(() => {
+    console.log("Table 'refreshTokens' created successfully!");
+  })
+  .catch((err) => {
+    console.error("Unable to create table 'refreshTokens': ", err);
+  });
 
 export default RefreshToken;

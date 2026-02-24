@@ -10,7 +10,7 @@ export const categories = {
   other: 'other',
 } as const;
 
-export type Category = typeof categories[keyof typeof categories];
+export type Category = (typeof categories)[keyof typeof categories];
 
 interface EventAttributes {
   id: number;
@@ -135,10 +135,13 @@ Event.init(
 User.hasMany(Event, { foreignKey: 'createdBy' });
 Event.belongsTo(User, { foreignKey: 'createdBy' });
 
-sequelize.sync().then(() => {
-  console.log("Table 'events' created successfully!");
-}).catch((err) => {
-  console.error("Unable to create table 'events': ", err);
-});
+sequelize
+  .sync()
+  .then(() => {
+    console.log("Table 'events' created successfully!");
+  })
+  .catch((err) => {
+    console.error("Unable to create table 'events': ", err);
+  });
 
 export { Event as eventModel };

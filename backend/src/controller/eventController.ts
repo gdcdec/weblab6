@@ -85,7 +85,11 @@ const getEvents = async (req: Request, res: Response, next: NextFunction): Promi
  *             example:
  *               message: "An unexpected error occurred"
  */
-const getEventById = async (req: Request<EventParams>, res: Response, next: NextFunction): Promise<void> => {
+const getEventById = async (
+  req: Request<EventParams>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { eventId } = req.params;
     const event = await eventModel.findOne({
@@ -148,7 +152,11 @@ const getEventById = async (req: Request<EventParams>, res: Response, next: Next
  *             example:
  *               message: "An unexpected error occurred"
  */
-const getEventByCat = async (req: Request<EventParams>, res: Response, next: NextFunction): Promise<void> => {
+const getEventByCat = async (
+  req: Request<EventParams>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { eventCat } = req.params;
     const events = await eventModel.findAll({
@@ -280,8 +288,8 @@ const createEvent = async (req: Request, res: Response, next: NextFunction): Pro
     // Explicitly type count as number to avoid overload ambiguity
     const count: number = await eventModel.count({
       where: {
-        createdAt: { [Op.gte]: twentyFourHoursAgo }
-      }
+        createdAt: { [Op.gte]: twentyFourHoursAgo },
+      },
     });
 
     if (count > dailyLimit) {
@@ -385,7 +393,11 @@ const createEvent = async (req: Request, res: Response, next: NextFunction): Pro
  *             example:
  *               message: "An unexpected error occurred"
  */
-const updateEvent = async (req: Request<EventParams>, res: Response, next: NextFunction): Promise<void> => {
+const updateEvent = async (
+  req: Request<EventParams>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { eventId } = req.params;
     const { title, description, date, createdBy, category } = req.body as EventBody;
@@ -453,7 +465,11 @@ const updateEvent = async (req: Request<EventParams>, res: Response, next: NextF
  *             example:
  *               message: "An unexpected error occurred"
  */
-const deleteEvent = async (req: Request<EventParams>, res: Response, next: NextFunction): Promise<void> => {
+const deleteEvent = async (
+  req: Request<EventParams>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { eventId } = req.params;
     const event = await eventModel.findOne({ where: { id: eventId } });

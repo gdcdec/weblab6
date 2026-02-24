@@ -106,10 +106,13 @@ User.beforeCreate(async (user) => {
   user.password = await bcrypt.hash(user.password, 10);
 });
 
-sequelize.sync().then(() => {
-  console.log("Table 'users' created successfully!");
-}).catch((err) => {
-  console.error("Unable to create table 'users': ", err);
-});
+sequelize
+  .sync()
+  .then(() => {
+    console.log("Table 'users' created successfully!");
+  })
+  .catch((err) => {
+    console.error("Unable to create table 'users': ", err);
+  });
 
 export default User;
