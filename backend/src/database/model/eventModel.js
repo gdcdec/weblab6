@@ -2,6 +2,14 @@ import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.js";
 import userModel from "./userModel.js"
 
+const categories = Object.freeze({
+    education: "education",
+    amusement: "amusement",
+    work: "work",
+    hobby: "hobby",
+    other: "other"
+});
+
 /**
  * @swagger
  * components:
@@ -57,15 +65,6 @@ import userModel from "./userModel.js"
  *         date: "2024-05-15T09:00:00.000Z"
  *         createdBy: 1
  */
-const categories = Object.freeze({
-    education: "education",
-    amusement: "amusement",
-    work: "work",
-    hobby: "hobby",
-    other: "other"
-});
-
-// Define 'events' model
 const eventModel = sequelize.define('events', {
     id: {
         type: DataTypes.INTEGER.UNSIGNED,
