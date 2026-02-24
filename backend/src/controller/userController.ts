@@ -1,10 +1,29 @@
-import userModel from "../database/model/userModel.js";
-import refreshTokensModel from '../database/model/refreshTokensModel.js';
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { Request, Response, NextFunction } from 'express';
+import User from '@models/userModel.js';
+import RefreshToken from '@models/refreshTokensModel.js';
+import bcrypt from 'bcryptjs';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 import { Op } from 'sequelize';
-import { sequelize } from '../config/db.js';
+import { sequelize } from '@config/db.js';
+
+// Extend the RefreshToken type to include the associated user
+type RefreshTokenWithUser = RefreshToken & { user: User };
+
+interface RegisterBody {
+  name: string;
+  email: string;
+  password: string;
+}
+
+interface LoginBody {
+  email: string;
+  password: string;
+}
+
+interface RefreshBody {
+  refreshToken: string;
+}
 
 /**
  * @swagger
@@ -79,61 +98,50 @@ import { sequelize } from '../config/db.js';
  *             example:
  *               message: "An unexpected error occurred"
  */
-const createUser = async (req, res, next) => {
-    try {
-        const { name, email, password } = req.body
-        if (!name || !email || !password) {
-            return res.status(400).json({
-                message: "name, email and password required"
-            });
-        }
-
-        // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return res.status(400).json({
-                message: "Invalid email format"
-            });
-        }
-
-        // Check password length
-        if (password.length < 6) {
-            return res.status(400).json({
-                message: "Password must be at least 6 characters long"
-            });
-        }
-
-        // Check whether user already exists
-        const isUserExists = await userModel.findOne({ where: { email } });
-        if(isUserExists) {
-            return res.status(400).json({
-                message: "User already exists"
-            });
-        }
-
-        // Create user if it not exists yet.
-        // Note: The password will be automatically hashed by the model's
-        // beforeCreate hook
-        const newUser = await userModel.create({
-            name,
-            email,
-            password,
-            createdAt: new Date()
-        });
-
-        // Remove password from response
-        const userResponse = {
-            id: newUser.id,
-            name: newUser.name,
-            email: newUser.email,
-            createdAt: newUser.createdAt
-        };
-
-        return res.status(201).json(userResponse)
-    } catch (err) {
-        next(err);
+const createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { name, email, password } = req.body as RegisterBody;
+    if (!name || !email || !password) {
+      res.status(400).json({ message: 'name, email and password required' });
+      return;
     }
-}
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      res.status(400).json({ message: 'Invalid email format' });
+      return;
+    }
+
+    if (password.length < 6) {
+      res.status(400).json({ message: 'Password must be at least 6 characters long' });
+      return;
+    }
+
+    const isUserExists = await User.findOne({ where: { email } });
+    if (isUserExists) {
+      res.status(400).json({ message: 'User already exists' });
+      return;
+    }
+
+    const newUser = await User.create({
+      name,
+      email,
+      password,
+      createdAt: new Date(),
+    });
+
+    const userResponse = {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      createdAt: newUser.createdAt,
+    };
+
+    res.status(201).json(userResponse);
+  } catch (err) {
+    next(err);
+  }
+};
 
 /**
  * @swagger
@@ -201,17 +209,16 @@ const createUser = async (req, res, next) => {
  *             example:
  *               message: "An unexpected error occurred"
  */
-const getUsers = async (req, res, next) => {
-    try {
-        const users = await userModel.findAll({
-            // Exclude password
-            attributes: ['id', 'name', 'email', 'createdAt']
-        });
-        return res.status(200).json(users)
-    } catch (err) {
-        next(err)
-    }
-}
+const getUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const users = await User.findAll({
+      attributes: ['id', 'name', 'email', 'createdAt'],
+    });
+    res.status(200).json(users);
+  } catch (err) {
+    next(err);
+  }
+};
 
 /**
  * @swagger
@@ -287,58 +294,51 @@ const getUsers = async (req, res, next) => {
  *             example:
  *               message: "An unexpected error occurred"
  */
-const loginUser = async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json({
-                message: "email and password required"
-            });
-        }
-
-        // Find the user by email
-        const user = await userModel.findOne({ where: { email } });
-        if (!user) {
-            return res.status(401).json({
-                message: "Invalid email or password"
-            });
-        }
-
-        // Check password
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).json({
-                message: "Invalid email or password"
-            });
-        }
-
-        // Generate access token
-        const accessToken = jwt.sign(
-            { id: user.id, email: user.email },
-            process.env.JWT_SECRET,
-            { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
-        );
-
-        // Generate refresh token (secure random string)
-        const refreshToken = crypto.randomBytes(40).toString('hex');
-        const refreshExpiry = new Date();
-        refreshExpiry.setDate(refreshExpiry.getDate() + (parseInt(process.env.REFRESH_TOKEN_DAYS) || 7));
-
-        // Store refresh token in database
-        await refreshTokensModel.create({
-            userId: user.id,
-            token: refreshToken,
-            expiresAt: refreshExpiry
-        });
-
-        return res.status(200).json({
-            message: "Login successful",
-            accessToken,
-            refreshToken
-        });
-    } catch (err) {
-        next(err);
+const loginUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { email, password } = req.body as LoginBody;
+    if (!email || !password) {
+      res.status(400).json({ message: 'email and password required' });
+      return;
     }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      res.status(401).json({ message: 'Invalid email or password' });
+      return;
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      res.status(401).json({ message: 'Invalid email or password' });
+      return;
+    }
+
+    // FIX: Cast secret to string and options to SignOptions
+    const accessToken = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET as string,
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' } as SignOptions
+    );
+
+    const refreshToken = crypto.randomBytes(40).toString('hex');
+    const refreshExpiry = new Date();
+    refreshExpiry.setDate(refreshExpiry.getDate() + (parseInt(process.env.REFRESH_TOKEN_DAYS as string, 10) || 7));
+
+    await RefreshToken.create({
+      userId: user.id,
+      token: refreshToken,
+      expiresAt: refreshExpiry,
+    });
+
+    res.status(200).json({
+      message: 'Login successful',
+      accessToken,
+      refreshToken,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**
@@ -400,55 +400,60 @@ const loginUser = async (req, res, next) => {
  *             example:
  *               message: "An unexpected error occurred"
  */
-const refreshToken = async (req, res, next) => {
-    try {
-        const { refreshToken } = req.body;
-        if (!refreshToken) {
-            return res.status(400).json({ message: "Refresh token required" });
-        }
-
-        // Find token in DB that is not expired
-        const tokenRecord = await refreshTokensModel.findOne({
-            where: {
-                token: refreshToken,
-                expiresAt: { [Op.gt]: new Date() } // still valid
-            },
-            include: [{ model: userModel, attributes: ['id', 'email'] }]
-        });
-
-        if (!tokenRecord) {
-            return res.status(401).json({ message: "Invalid or expired refresh token" });
-        }
-
-        // Generate new access token
-        const newAccessToken = jwt.sign(
-            { id: tokenRecord.user.id, email: tokenRecord.user.email },
-            process.env.JWT_SECRET,
-            { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
-        );
-
-        // Generate new refresh token (rotation)
-        const newRefreshToken = crypto.randomBytes(40).toString('hex');
-        const newExpiry = new Date();
-        newExpiry.setDate(newExpiry.getDate() + (parseInt(process.env.REFRESH_TOKEN_DAYS) || 7));
-
-        // Use a transaction to delete old token and create new one atomically
-        await sequelize.transaction(async (t) => {
-            await refreshTokensModel.destroy({ where: { id: tokenRecord.id }, transaction: t });
-            await refreshTokensModel.create({
-                userId: tokenRecord.userId,
-                token: newRefreshToken,
-                expiresAt: newExpiry
-            }, { transaction: t });
-        });
-
-        return res.status(200).json({
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken
-        });
-    } catch (err) {
-        next(err);
+const refreshToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { refreshToken } = req.body as RefreshBody;
+    if (!refreshToken) {
+      res.status(400).json({ message: 'Refresh token required' });
+      return;
     }
+
+    // FIX: Cast the result to include the associated user
+    const tokenRecord = (await RefreshToken.findOne({
+      where: {
+        token: refreshToken,
+        expiresAt: { [Op.gt]: new Date() },
+      },
+      include: [{ model: User, attributes: ['id', 'email'] }],
+    })) as RefreshTokenWithUser | null;
+
+    if (!tokenRecord) {
+      res.status(401).json({ message: 'Invalid or expired refresh token' });
+      return;
+    }
+
+    const user = tokenRecord.user;
+
+    // FIX: Cast secret to string and options to SignOptions
+    const newAccessToken = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET as string,
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' } as SignOptions
+    );
+
+    const newRefreshToken = crypto.randomBytes(40).toString('hex');
+    const newExpiry = new Date();
+    newExpiry.setDate(newExpiry.getDate() + (parseInt(process.env.REFRESH_TOKEN_DAYS as string, 10) || 7));
+
+    await sequelize.transaction(async (t) => {
+      await RefreshToken.destroy({ where: { id: tokenRecord.id }, transaction: t });
+      await RefreshToken.create(
+        {
+          userId: tokenRecord.userId,
+          token: newRefreshToken,
+          expiresAt: newExpiry,
+        },
+        { transaction: t }
+      );
+    });
+
+    res.status(200).json({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export { getUsers, createUser, loginUser, refreshToken };

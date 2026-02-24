@@ -52,11 +52,20 @@ To deploy this project one should follow these steps:
 
     5) Create database with the same name as mentioned in `.env' file.
 
-    6) Run server:
+    6) Compile the TypeScript code:
+        $ npm run build
+
+    7) Run server:
+        $ npm run start
+
+        or
+
         $ npm run dev
 
-       to run server in development mode with `nodemon' (`nodemon' won't be
-       installed with `npm install --omit=dev')
+       to run server in development mode with `nodemon'. Note that
+       `nodemon' is not installed with run `npm install --omit=dev'. If
+       you need to run it in development mode, run `npm install'. This
+       command install all development dependencies.
 
 
                                    USAGE

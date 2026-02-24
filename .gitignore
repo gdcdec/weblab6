@@ -11,3 +11,6 @@ eslint.config.js
 *.swp
 
 package-lock.json
+
+# Default output directory for compiled TypeScript code
+dist/

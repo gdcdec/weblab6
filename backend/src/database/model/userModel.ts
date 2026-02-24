@@ -1,6 +1,24 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../../config/db.js";
-import bcrypt from "bcryptjs";
+import { DataTypes, Model, Optional } from 'sequelize';
+import { sequelize } from '@config/db.js';
+import bcrypt from 'bcryptjs';
+
+export interface UserAttributes {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  createdAt?: Date;
+}
+
+interface UserCreationAttributes extends Optional<UserAttributes, 'id'> {}
+
+class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
+  public id!: number;
+  public name!: string;
+  public email!: string;
+  public password!: string;
+  public createdAt!: Date;
+}
 
 /**
  * @swagger
@@ -52,39 +70,46 @@ import bcrypt from "bcryptjs";
  *         email: "john.doe@example.com"
  *         createdAt: "2023-01-01T10:00:00.000Z"
  */
-const userModel = sequelize.define('users', {
+User.init(
+  {
     id: {
-        type: DataTypes.INTEGER.UNSIGNED,
-        primaryKey: true,
-        unique: true,
-        autoIncrement: true,
-        allowNull: false
+      type: DataTypes.INTEGER.UNSIGNED,
+      primaryKey: true,
+      unique: true,
+      autoIncrement: true,
+      allowNull: false,
     },
     name: {
-        type: DataTypes.STRING,
-        allowNull: false,
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     email: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-        validate: { isEmail: true }
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false,
+      validate: { isEmail: true },
     },
     password: {
-        type: DataTypes.STRING,
-        allowNull: false,
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    createdAt: DataTypes.DATE
-})
+    createdAt: DataTypes.DATE,
+  },
+  {
+    sequelize,
+    modelName: 'users',
+    timestamps: false,
+  }
+);
 
-userModel.beforeCreate(async (user) => {
-    user.password = await bcrypt.hash(user.password, 10);
+User.beforeCreate(async (user) => {
+  user.password = await bcrypt.hash(user.password, 10);
 });
 
 sequelize.sync().then(() => {
-   console.log("Table 'users' created successfully!");
+  console.log("Table 'users' created successfully!");
 }).catch((err) => {
-   console.error("Unable to create table 'users': ", err);
+  console.error("Unable to create table 'users': ", err);
 });
 
-export default userModel;
+export default User;

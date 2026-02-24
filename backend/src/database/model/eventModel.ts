@@ -1,14 +1,40 @@
-import { DataTypes } from "sequelize";
-import { sequelize } from "../../config/db.js";
-import userModel from "./userModel.js"
+import { DataTypes, Model, Optional } from 'sequelize';
+import { sequelize } from '@config/db.js';
+import User from '@models/userModel.js';
 
-const categories = Object.freeze({
-    education: "education",
-    amusement: "amusement",
-    work: "work",
-    hobby: "hobby",
-    other: "other"
-});
+export const categories = {
+  education: 'education',
+  amusement: 'amusement',
+  work: 'work',
+  hobby: 'hobby',
+  other: 'other',
+} as const;
+
+export type Category = typeof categories[keyof typeof categories];
+
+interface EventAttributes {
+  id: number;
+  title: string;
+  description: string | null;
+  category: Category;
+  date: Date;
+  createdBy: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+interface EventCreationAttributes extends Optional<EventAttributes, 'id'> {}
+
+class Event extends Model<EventAttributes, EventCreationAttributes> implements EventAttributes {
+  public id!: number;
+  public title!: string;
+  public description!: string | null;
+  public category!: Category;
+  public date!: Date;
+  public createdBy!: number;
+  public createdAt!: Date;
+  public updatedAt!: Date;
+}
 
 /**
  * @swagger
@@ -65,48 +91,54 @@ const categories = Object.freeze({
  *         date: "2024-05-15T09:00:00.000Z"
  *         createdBy: 1
  */
-const eventModel = sequelize.define('events', {
+Event.init(
+  {
     id: {
-        type: DataTypes.INTEGER.UNSIGNED,
-        primaryKey: true,
-        unique: true,
-        autoIncrement: true,
-        allowNull: false
+      type: DataTypes.INTEGER.UNSIGNED,
+      primaryKey: true,
+      unique: true,
+      autoIncrement: true,
+      allowNull: false,
     },
     title: {
-        type: DataTypes.STRING,
-        allowNull: false,
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     description: {
-        type: DataTypes.STRING,
-        allowNull: true,
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     category: {
-        type: DataTypes.STRING,
-        allowNull: false,
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     date: {
-        type: DataTypes.DATE,
-        allowNull: false,
+      type: DataTypes.DATE,
+      allowNull: false,
     },
     createdBy: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: userModel,
-            key: 'id'
-        },
-        onDelete: 'CASCADE'
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: User,
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
     },
-});
+  },
+  {
+    sequelize,
+    modelName: 'events',
+  }
+);
 
-userModel.hasMany(eventModel, { foreignKey: 'createdBy' });
-eventModel.belongsTo(userModel, { foreignKey: 'createdBy' });
+User.hasMany(Event, { foreignKey: 'createdBy' });
+Event.belongsTo(User, { foreignKey: 'createdBy' });
 
 sequelize.sync().then(() => {
-   console.log("Table 'events' created successfully!");
+  console.log("Table 'events' created successfully!");
 }).catch((err) => {
-   console.error("Unable to create table 'events': ", err);
+  console.error("Unable to create table 'events': ", err);
 });
 
-export { eventModel, categories };
+export { Event as eventModel };
