@@ -18,7 +18,6 @@ export default [
 
   // Your custom configuration
   {
-    files: ['src/**/*.ts'], // apply to TypeScript files
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
