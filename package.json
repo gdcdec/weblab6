@@ -7,7 +7,12 @@
     "lint:back": "eslint --ext .ts 'backend/src'",
     "lint:back:fix": "eslint --fix --ext .ts 'backend/src'",
     "check:back": "prettier --check 'backend/src/**/*.ts'",
-    "format:back": "prettier --write 'backend/src/**/*.ts'"
+    "format:back": "prettier --write 'backend/src/**/*.ts'",
+    "lint:front": "eslint --ext .ts,.tsx 'frontend/src'",
+    "lint:front:fix": "eslint --fix --ext .ts,.tsx 'frontend/src'",
+    "check:front": "prettier --check 'frontend/src/**/*.{ts,tsx,scss}'",
+    "format:front": "prettier --write 'frontend/src/**/*.{ts,tsx,scss}'",
+    "clean": "rm -rf node_modules/ package-lock.json"
   },
   "keywords": [],
   "author": "Dobby",
@@ -16,9 +21,10 @@
     "@eslint/js": "^10.0.1",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
-    "eslint": "^10.0.2",
+    "eslint": "^9.39.3",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "globals": "^17.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
@@ -27,6 +33,10 @@
   },
   "lint-staged": {
     "backend/src/**/*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "frontend/src/**/*.{ts,tsx,scss}": [
       "eslint --fix",
       "prettier --write"
     ]

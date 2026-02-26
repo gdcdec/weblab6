@@ -1,0 +1,114 @@
+.events {
+  h1 {
+    margin-bottom: 1.5rem;
+    color: var(--yellow);
+    text-align: center; /* Center the heading */
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.loading {
+  text-align: center;
+  color: var(--comment);
+  font-size: 1.2rem;
+  margin-top: 2rem;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+
+  .emptyMessage {
+    font-size: 2rem;
+    color: var(--fg-dark);
+    margin-bottom: 2rem;
+  }
+}
+
+.createButton {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: var(--bg-dark);
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--comment);
+
+  h3 {
+    color: var(--cyan);
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .field {
+    margin-bottom: 1.5rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--fg-dark);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--comment);
+      border-radius: 4px;
+      background-color: var(--bg);
+      color: var(--fg);
+      font-size: 1rem;
+
+      &:focus {
+        outline: none;
+        border-color: var(--cyan);
+      }
+
+      &:disabled {
+        opacity: 0.7;
+      }
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+  }
+
+  .modalActions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+  }
+}

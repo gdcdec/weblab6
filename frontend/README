@@ -1,0 +1,54 @@
+                               INSTALLATION
+                               ============
+
+One have to install some software. Following dependencies can be obtained
+from package manager or their official site.
+
+    1) git (https://git-scm.com/);
+    2) NodeJS (https://nodejs.org/);
+
+To deploy the frontend one should follow these steps:
+
+    1) Clone the repository:
+        $ git clone https://github.com/gdcdec/weblab6
+
+    2) Jump to frontend directory:
+        $ cd weblab6/frontend
+
+    3) Install Yarn globally:
+        $ npm install --global yarn
+
+    4) Intall all dependencies specified in 'package.json':
+        $ yarn install
+
+    5) Create '.env' file inside backend directory:
+
+        VITE_API_BASE_URL=http://localhost:3000
+
+
+                                   USAGE
+                                   =====
+
+1. Compile the TypeScript code:
+    $ yarn build
+
+2.  Run server:
+    $ yarn dev
+
+3. Clean all dependencies:
+    $ yarn clean
+
+
+                                 WHAT WORK
+                                 =========
+
+- Registration
+- Authorization
+- Creation of new events
+
+
+                             WHAT DOESN'T WORK
+                             =================
+
+- Deletion of events
+- Sorting of events by date

@@ -8,6 +8,7 @@ node_modules/
 *.swp
 
 package-lock.json
+yarn.lock
 
 # Default output directory for compiled TypeScript code
 dist/

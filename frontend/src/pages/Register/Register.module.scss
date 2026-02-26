@@ -1,0 +1,60 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.form {
+  background-color: var(--bg-dark);
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+
+  h2 {
+    margin-bottom: 1.5rem;
+    color: var(--cyan);
+    text-align: center;
+  }
+}
+
+.field {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--fg-dark);
+  }
+
+  input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--comment);
+    border-radius: 4px;
+    background-color: var(--bg);
+    color: var(--fg);
+    font-size: 1rem;
+
+    &:focus {
+      outline: none;
+      border-color: var(--cyan);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+    }
+  }
+}
+
+.link {
+  margin-top: 1rem;
+  text-align: center;
+  color: var(--fg-dark);
+
+  a {
+    color: var(--blue);
+  }
+}
