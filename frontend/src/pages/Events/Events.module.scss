@@ -1,15 +1,44 @@
 .events {
   h1 {
     margin-bottom: 1.5rem;
-    color: var(--yellow);
-    text-align: center; /* Center the heading */
+    color: var(--cyan);
+    text-align: center;
   }
 }
 
-.topCreateButton {
+.controls {
   display: flex;
-  justify-content: center;
-  margin-bottom: 2rem; // space between button and grid
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  label {
+    color: var(--fg-dark);
+  }
+
+  select {
+    padding: 0.5rem;
+    border: 1px solid var(--comment);
+    border-radius: 4px;
+    background-color: var(--bg);
+    color: var(--fg);
+    font-size: 1rem;
+
+    &:focus {
+      outline: none;
+      border-color: var(--cyan);
+    }
+
+    &:disabled {
+      opacity: 0.7;
+    }
+  }
 }
 
 .grid {
@@ -40,10 +69,11 @@
   }
 }
 
-.createButton {
+.noMatch {
+  text-align: center;
+  color: var(--comment);
+  font-size: 1.2rem;
   margin-top: 2rem;
-  display: flex;
-  justify-content: center;
 }
 
 .modalOverlay {
@@ -114,24 +144,8 @@
   .modalActions {
     display: flex;
     gap: 1rem;
-    justify-content: flex-end;
     margin-top: 2rem;
   }
-}
-
-.deleteMessage {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: var(--bg-dark);
-  color: var(--fg);
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  border: 1px solid var(--green);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  z-index: 2000;
-  font-size: 1.2rem;
 }
 
 .deleteModal {

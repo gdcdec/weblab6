@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {getEvents, createEvent, deleteEvent} from '../../api/eventService';
 import {useAuth} from '../../contexts/AuthContext';
@@ -6,9 +6,22 @@ import EventCard from './components/EventCard';
 import Button from '../../components/Button/Button';
 import ErrorDisplay from '../../components/ErrorDisplay/ErrorDisplay';
 import styles from './Events.module.scss';
+import type {Event} from '../../types/event';
+
+type DateFilter = 'all' | 'today' | 'week' | 'month';
+
+// Helper to extract error message from unknown error
+const getErrorMessage = (error: unknown): string => {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const err = error as any;
+    return err.response?.data?.message || err.message || 'An error occurred';
+  }
+  if (error instanceof Error) return error.message;
+  return 'An unexpected error occurred';
+};
 
 const Events: React.FC = () => {
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -21,6 +34,7 @@ const Events: React.FC = () => {
     category: 'education' as const,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
   const navigate = useNavigate();
   const {user, isLoading: authLoading} = useAuth();
 
@@ -39,10 +53,8 @@ const Events: React.FC = () => {
     try {
       const data = await getEvents();
       setEvents(data);
-    } catch (err: any) {
-      const message =
-        err.response?.data?.message || err.message || 'Failed to load events';
-      setError(message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -78,10 +90,8 @@ const Events: React.FC = () => {
         category: 'education',
       });
       fetchEvents();
-    } catch (err: any) {
-      const message =
-        err.response?.data?.message || err.message || 'Failed to create event';
-      setError(message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -100,10 +110,8 @@ const Events: React.FC = () => {
       setDeleteModalOpen(false);
       setEventToDelete(null);
       fetchEvents();
-    } catch (err: any) {
-      const message =
-        err.response?.data?.message || err.message || 'Failed to delete event';
-      setError(message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
       setDeleteModalOpen(false);
     } finally {
       setSubmitting(false);
@@ -115,6 +123,34 @@ const Events: React.FC = () => {
     setEventToDelete(null);
   };
 
+  // Date filter logic – fixed no-case-declarations by using {}
+  const filteredEvents = useMemo(() => {
+    if (dateFilter === 'all') return events;
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    return events.filter((event) => {
+      const eventDate = new Date(event.date);
+      switch (dateFilter) {
+        case 'today': {
+          const tomorrow = new Date(today.getTime() + 86400000);
+          return eventDate >= today && eventDate < tomorrow;
+        }
+        case 'week': {
+          const weekAgo = new Date(today.getTime() - 7 * 86400000);
+          return eventDate >= weekAgo;
+        }
+        case 'month': {
+          const monthAgo = new Date(today.getTime() - 30 * 86400000);
+          return eventDate >= monthAgo;
+        }
+        default:
+          return true;
+      }
+    });
+  }, [events, dateFilter]);
+
   if (authLoading)
     return <div className={styles.loading}>Checking authentication...</div>;
   if (loading) return <div className={styles.loading}>Loading events...</div>;
@@ -124,9 +160,22 @@ const Events: React.FC = () => {
       <h1>Events</h1>
       <ErrorDisplay message={error} onClose={() => setError(null)} />
 
-      {/* Show "New event" button at the top when there are events */}
       {events.length > 0 && (
-        <div className={styles.topCreateButton}>
+        <div className={styles.controls}>
+          <div className={styles.filter}>
+            <label htmlFor="dateFilter">Show: </label>
+            <select
+              id="dateFilter"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value as DateFilter)}
+              disabled={submitting}
+            >
+              <option value="all">All</option>
+              <option value="today">Today</option>
+              <option value="week">This week</option>
+              <option value="month">This month</option>
+            </select>
+          </div>
           <Button variant="primary" onClick={() => setModalOpen(true)}>
             New event
           </Button>
@@ -140,9 +189,13 @@ const Events: React.FC = () => {
             New event
           </Button>
         </div>
+      ) : filteredEvents.length === 0 ? (
+        <div className={styles.noMatch}>
+          No events match the selected filter.
+        </div>
       ) : (
         <div className={styles.grid}>
-          {events.map((event) => (
+          {filteredEvents.map((event) => (
             <EventCard
               key={event.id}
               event={event}
