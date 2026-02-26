@@ -112,3 +112,31 @@
     margin-top: 2rem;
   }
 }
+
+.deleteMessage {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--bg-dark);
+  color: var(--fg);
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  border: 1px solid var(--green);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+  font-size: 1.2rem;
+}
+
+.deleteModal {
+  text-align: center;
+
+  h3,
+  p {
+    text-align: center;
+  }
+
+  .modalActions {
+    justify-content: center;
+  }
+}

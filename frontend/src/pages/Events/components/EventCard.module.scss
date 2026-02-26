@@ -35,3 +35,22 @@
   color: var(--cyan);
   font-size: 0.9rem;
 }
+
+.deleteButton {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--red); // red background
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #a05a55; // darker red on hover
+  }
+}

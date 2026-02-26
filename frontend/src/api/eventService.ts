@@ -24,3 +24,7 @@ export const createEvent = async (
   const response = await axiosInstance.post<Event>('/events', eventData);
   return response.data;
 };
+
+export const deleteEvent = async (id: number): Promise<void> => {
+  await axiosInstance.delete(`/events/id/${id}`);
+};

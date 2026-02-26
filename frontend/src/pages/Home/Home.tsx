@@ -1,9 +1,12 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
+import {useAuth} from '../../contexts/AuthContext';
 import Button from '../../components/Button/Button';
 import styles from './Home.module.scss';
 
 const Home: React.FC = () => {
+  const {user} = useAuth();
+
   return (
     <div className={styles.home}>
       <div className={styles.hero}>
@@ -18,12 +21,15 @@ const Home: React.FC = () => {
           and participate in amazing events.
         </p>
         <div className={styles.actions}>
-          <Link to="/events">
-            <Button variant="primary">Browse Events</Button>
-          </Link>
-          <Link to="/register">
-            <Button variant="secondary">Get Started</Button>
-          </Link>
+          {user ? (
+            <Link to="/events">
+              <Button variant="primary">Browse Events</Button>
+            </Link>
+          ) : (
+            <Link to="/register">
+              <Button variant="primary">Get Started</Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>

@@ -1,7 +1,6 @@
-// frontend/src/pages/Events/Events.tsx
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {getEvents, createEvent} from '../../api/eventService';
+import {getEvents, createEvent, deleteEvent} from '../../api/eventService';
 import {useAuth} from '../../contexts/AuthContext';
 import EventCard from './components/EventCard';
 import Button from '../../components/Button/Button';
@@ -13,6 +12,8 @@ const Events: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -61,7 +62,6 @@ const Events: React.FC = () => {
     if (!user) return;
     setSubmitting(true);
     try {
-      // Convert datetime-local to ISO string
       const dateIso = new Date(formData.date).toISOString();
       await createEvent({
         title: formData.title,
@@ -77,7 +77,7 @@ const Events: React.FC = () => {
         date: '',
         category: 'education',
       });
-      fetchEvents(); // refresh list
+      fetchEvents();
     } catch (err: any) {
       const message =
         err.response?.data?.message || err.message || 'Failed to create event';
@@ -85,6 +85,34 @@ const Events: React.FC = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleDeleteClick = (id: number) => {
+    setEventToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!eventToDelete) return;
+    setSubmitting(true);
+    try {
+      await deleteEvent(eventToDelete);
+      setDeleteModalOpen(false);
+      setEventToDelete(null);
+      fetchEvents();
+    } catch (err: any) {
+      const message =
+        err.response?.data?.message || err.message || 'Failed to delete event';
+      setError(message);
+      setDeleteModalOpen(false);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModalOpen(false);
+    setEventToDelete(null);
   };
 
   if (authLoading)
@@ -98,7 +126,7 @@ const Events: React.FC = () => {
 
       {events.length === 0 ? (
         <div className={styles.emptyState}>
-          <p className={styles.emptyMessage}>No any</p>
+          <p className={styles.emptyMessage}>Events. No any</p>
           <Button variant="primary" onClick={() => setModalOpen(true)}>
             New event
           </Button>
@@ -107,7 +135,11 @@ const Events: React.FC = () => {
         <>
           <div className={styles.grid}>
             {events.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard
+                key={event.id}
+                event={event}
+                onDelete={handleDeleteClick}
+              />
             ))}
           </div>
           <div className={styles.createButton}>
@@ -118,7 +150,7 @@ const Events: React.FC = () => {
         </>
       )}
 
-      {/* Modal for creating event */}
+      {/* Create Event Modal */}
       {modalOpen && (
         <div
           className={styles.modalOverlay}
@@ -192,6 +224,35 @@ const Events: React.FC = () => {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className={styles.modalOverlay} onClick={cancelDelete}>
+          <div
+            className={`${styles.modal} ${styles.deleteModal}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete this event?</p>
+            <div className={styles.modalActions}>
+              <Button
+                variant="secondary"
+                onClick={cancelDelete}
+                disabled={submitting}
+              >
+                No
+              </Button>
+              <Button
+                variant="primary"
+                onClick={confirmDelete}
+                disabled={submitting}
+              >
+                Yes
+              </Button>
+            </div>
           </div>
         </div>
       )}
