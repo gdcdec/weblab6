@@ -5,3 +5,39 @@
                                    =====
 
 This repo is related to the web development class.
+
+
+                               INSTALLATION
+                               ============
+
+1. Clone the repository:
+    $ git clone https://github.com/gdcdec/weblab6
+
+2. Jump to the 'weblab6' directory:
+    $ cd weblab6/
+
+3. Intall all dependencies specified in 'package.json':
+    $ npm install
+
+
+                                   USAGE
+                                   =====
+
+1. Lint the code:
+    $ npm run lint:back
+
+    or
+
+    $ npm run lint:front
+
+2. Check the code:
+    $ npm run check:back
+
+    or
+
+    $ npm run check:front
+
+    See another options in the 'package.json'.
+
+3. Delete all dependencies:
+    $ npm run clean
