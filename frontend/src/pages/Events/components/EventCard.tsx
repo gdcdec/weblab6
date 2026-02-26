@@ -4,14 +4,13 @@ import styles from './EventCard.module.scss';
 
 interface EventCardProps {
   event: Event;
-  onDelete: (id: number) => void; // opens confirmation modal
+  onDelete: (id: number) => void;
 }
 
 const EventCard: React.FC<EventCardProps> = ({event, onDelete}) => {
   const [isClicked, setIsClicked] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // Hide delete button when clicking outside the card
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (cardRef.current && !cardRef.current.contains(e.target as Node)) {
@@ -27,9 +26,9 @@ const EventCard: React.FC<EventCardProps> = ({event, onDelete}) => {
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // prevent toggling card click state
+    e.stopPropagation();
     onDelete(event.id);
-    setIsClicked(false); // hide button after initiating delete
+    setIsClicked(false);
   };
 
   const date = new Date(event.date).toLocaleString();
@@ -43,9 +42,11 @@ const EventCard: React.FC<EventCardProps> = ({event, onDelete}) => {
       )}
       <p className={styles.date}>Date: {date}</p>
       {isClicked && (
-        <button className={styles.deleteButton} onClick={handleDeleteClick}>
-          Delete
-        </button>
+        <div className={styles.deleteButtonContainer}>
+          <button className={styles.deleteButton} onClick={handleDeleteClick}>
+            Delete
+          </button>
+        </div>
       )}
     </div>
   );
