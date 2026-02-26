@@ -12,7 +12,13 @@
     "lint:front:fix": "eslint --fix --ext .ts,.tsx 'frontend/src'",
     "check:front": "prettier --check 'frontend/src/**/*.{ts,tsx,scss}'",
     "format:front": "prettier --write 'frontend/src/**/*.{ts,tsx,scss}'",
-    "clean": "rm -rf node_modules/ package-lock.json"
+    "clean": "rm -rf node_modules/ package-lock.json",
+    "clean:back": "cd backend/ && npm run clean",
+    "clean:front": "cd frontend/ && yarn clean",
+    "clean:all": "npm run clean && npm run clean:back && npm run clean:front",
+    "build:back": "cd backend/ && npm install",
+    "build:front": "cd frontend/ && yarn install",
+    "build:all": "npm install && npm run build:back && npm run build:front"
   },
   "keywords": [],
   "author": "Dobby",
