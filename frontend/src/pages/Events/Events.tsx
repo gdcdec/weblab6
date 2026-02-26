@@ -124,6 +124,15 @@ const Events: React.FC = () => {
       <h1>Events</h1>
       <ErrorDisplay message={error} onClose={() => setError(null)} />
 
+      {/* Show "New event" button at the top when there are events */}
+      {events.length > 0 && (
+        <div className={styles.topCreateButton}>
+          <Button variant="primary" onClick={() => setModalOpen(true)}>
+            New event
+          </Button>
+        </div>
+      )}
+
       {events.length === 0 ? (
         <div className={styles.emptyState}>
           <p className={styles.emptyMessage}>Events. No any</p>
@@ -132,22 +141,15 @@ const Events: React.FC = () => {
           </Button>
         </div>
       ) : (
-        <>
-          <div className={styles.grid}>
-            {events.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                onDelete={handleDeleteClick}
-              />
-            ))}
-          </div>
-          <div className={styles.createButton}>
-            <Button variant="primary" onClick={() => setModalOpen(true)}>
-              New event
-            </Button>
-          </div>
-        </>
+        <div className={styles.grid}>
+          {events.map((event) => (
+            <EventCard
+              key={event.id}
+              event={event}
+              onDelete={handleDeleteClick}
+            />
+          ))}
+        </div>
       )}
 
       {/* Create Event Modal */}

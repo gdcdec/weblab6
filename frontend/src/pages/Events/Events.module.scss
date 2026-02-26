@@ -6,6 +6,12 @@
   }
 }
 
+.topCreateButton {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem; // space between button and grid
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
