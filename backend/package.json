@@ -8,7 +8,7 @@
     "dev": "nodemon --exec ts-node dist/index.js",
     "start": "node dist/index.js",
     "jwt-key": "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
-    "clean": "rm -rf node_modules/ package-lock.json"
+    "clean": "rm -rf dist/ node_modules/ package-lock.json"
   },
   "keywords": [],
   "author": "Dobby",

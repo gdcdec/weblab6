@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "clean": "rm -rf node_modules yarn.lock"
+    "clean": "rm -rf dist/ node_modules/ yarn.lock"
   },
   "dependencies": {
     "axios": "^1.13.5",
