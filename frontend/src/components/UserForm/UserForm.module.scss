@@ -11,11 +11,11 @@
   label {
     margin-bottom: 0.25rem;
     color: var(--fg-dark);
+    text-align: left;
   }
 
   input,
-  select,
-  textarea {
+  select {
     padding: 0.5rem;
     border: 1px solid var(--comment);
     border-radius: 4px;

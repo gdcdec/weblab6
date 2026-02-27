@@ -37,7 +37,7 @@ const Header: React.FC = () => {
       <nav className={styles.nav}>
         {user ? (
           <>
-            <span className={styles.user}>Hello, {user.name}</span>
+            <span className={styles.user}>Hello, {user.firstName}</span>
             <Link to="/profile">
               <Button variant="outline">Profile</Button>
             </Link>
@@ -60,7 +60,6 @@ const Header: React.FC = () => {
         )}
       </nav>
 
-      {/* Logout confirmation modal */}
       {showLogoutModal && (
         <div className={styles.modalOverlay} onClick={handleLogoutCancel}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>

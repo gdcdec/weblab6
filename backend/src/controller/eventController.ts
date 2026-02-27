@@ -526,10 +526,15 @@ const getMyEvents = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const userId = (req.user as { id: number }).id; // from passport
+    const userId = (req.user as { id: number }).id;
     const events = await eventModel.findAll({
       where: { createdBy: userId },
-      include: [{ model: User, attributes: ['id', 'name'] }],
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'firstName', 'lastName', 'patronymic'],
+        },
+      ],
     });
     res.status(200).json(events);
   } catch (err) {

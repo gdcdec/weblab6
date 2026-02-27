@@ -1,8 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import {
   login as apiLogin,
   register as apiRegister,
+  type RegisterData,
 } from '../../api/authService';
 import { getUsers } from '../../api/userService';
 import {
@@ -65,17 +67,10 @@ export const login = createAsyncThunk(
 
 export const register = createAsyncThunk(
   'auth/register',
-  async (
-    {
-      name,
-      email,
-      password,
-    }: { name: string; email: string; password: string },
-    { rejectWithValue }
-  ) => {
+  async (userData: RegisterData, { rejectWithValue }) => {
     try {
-      await apiRegister({ name, email, password });
-      return;
+      await apiRegister(userData);
+      return; // success, no payload needed
     } catch (error) {
       if (axios.isAxiosError(error)) {
         return rejectWithValue(error.response?.data?.message || error.message);
@@ -100,6 +95,10 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    updateUser: (state, action: PayloadAction<User>) => {
+      state.user = action.payload;
+      setUser(action.payload);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -121,6 +120,7 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state) => {
         state.isLoading = false;
+        // do not set user, just clear loading
       })
       .addCase(register.rejected, (state, action) => {
         state.isLoading = false;
@@ -132,5 +132,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError } = authSlice.actions;
+export const { clearError, updateUser } = authSlice.actions;
 export default authSlice.reducer;

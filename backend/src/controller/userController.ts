@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import User from '@models/userModel.js';
+import User, { UserAttributes } from '@models/userModel.js';
 import RefreshToken from '@models/refreshTokensModel.js';
 import bcrypt from 'bcryptjs';
 import jwt, { SignOptions } from 'jsonwebtoken';
@@ -7,11 +7,14 @@ import crypto from 'crypto';
 import { Op } from 'sequelize';
 import { sequelize } from '@config/db.js';
 
-// Extend the RefreshToken type to include the associated user
 type RefreshTokenWithUser = RefreshToken & { user: User };
 
 interface RegisterBody {
-  name: string;
+  firstName: string;
+  lastName: string;
+  patronymic: string;
+  gender: 'male' | 'female';
+  dateOfBirth: string;
   email: string;
   password: string;
 }
@@ -23,6 +26,15 @@ interface LoginBody {
 
 interface RefreshBody {
   refreshToken: string;
+}
+
+interface UpdateProfileBody {
+  firstName?: string;
+  lastName?: string;
+  patronymic?: string;
+  gender?: 'male' | 'female';
+  dateOfBirth?: string;
+  email?: string;
 }
 
 /**
@@ -104,9 +116,25 @@ const createUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { name, email, password } = req.body as RegisterBody;
-    if (!name || !email || !password) {
-      res.status(400).json({ message: 'name, email and password required' });
+    const {
+      firstName,
+      lastName,
+      patronymic,
+      gender,
+      dateOfBirth,
+      email,
+      password,
+    } = req.body as RegisterBody;
+    if (
+      !firstName ||
+      !lastName ||
+      !patronymic ||
+      !gender ||
+      !dateOfBirth ||
+      !email ||
+      !password
+    ) {
+      res.status(400).json({ message: 'All fields are required' });
       return;
     }
 
@@ -119,18 +147,33 @@ const createUser = async (
     if (password.length < 6) {
       res
         .status(400)
-        .json({ message: 'Password must be at least 6 characters long' });
+        .json({ message: 'Password must be at least 6 characters' });
       return;
     }
 
-    const isUserExists = await User.findOne({ where: { email } });
-    if (isUserExists) {
+    if (!['male', 'female'].includes(gender)) {
+      res.status(400).json({ message: 'Gender must be male or female' });
+      return;
+    }
+
+    const dob = new Date(dateOfBirth);
+    if (isNaN(dob.getTime())) {
+      res.status(400).json({ message: 'Invalid date of birth' });
+      return;
+    }
+
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
       res.status(400).json({ message: 'User already exists' });
       return;
     }
 
     const newUser = await User.create({
-      name,
+      firstName,
+      lastName,
+      patronymic,
+      gender,
+      dateOfBirth: dob,
       email,
       password,
       createdAt: new Date(),
@@ -138,7 +181,11 @@ const createUser = async (
 
     const userResponse = {
       id: newUser.id,
-      name: newUser.name,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      patronymic: newUser.patronymic,
+      gender: newUser.gender,
+      dateOfBirth: newUser.dateOfBirth,
       email: newUser.email,
       createdAt: newUser.createdAt,
     };
@@ -221,10 +268,103 @@ const getUsers = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const users = await User.findAll({
-      attributes: ['id', 'name', 'email', 'createdAt'],
-    });
+    const users = await User.findAll();
     res.status(200).json(users);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * @swagger
+ * /users/profile:
+ *   put:
+ *     tags: [Private]
+ *     summary: Update current user's profile
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               patronymic:
+ *                 type: string
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female]
+ *               dateOfBirth:
+ *                 type: string
+ *                 format: date
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Updated user
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
+const updateUserProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = (req.user as { id: number }).id;
+    const updates: UpdateProfileBody = req.body;
+
+    // Validate email if provided
+    if (updates.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(updates.email)) {
+        res.status(400).json({ message: 'Invalid email format' });
+        return;
+      }
+      const existing = await User.findOne({ where: { email: updates.email } });
+      if (existing && existing.id !== userId) {
+        res.status(400).json({ message: 'Email already in use' });
+        return;
+      }
+    }
+
+    if (updates.gender && !['male', 'female'].includes(updates.gender)) {
+      res.status(400).json({ message: 'Gender must be male or female' });
+      return;
+    }
+
+    // Prepare data for update with correct types
+    const updateData: Partial<UserAttributes> = {};
+    if (updates.firstName) updateData.firstName = updates.firstName;
+    if (updates.lastName) updateData.lastName = updates.lastName;
+    if (updates.patronymic) updateData.patronymic = updates.patronymic;
+    if (updates.gender) updateData.gender = updates.gender;
+    if (updates.email) updateData.email = updates.email;
+    if (updates.dateOfBirth) {
+      const dob = new Date(updates.dateOfBirth);
+      if (isNaN(dob.getTime())) {
+        res.status(400).json({ message: 'Invalid date of birth' });
+        return;
+      }
+      updateData.dateOfBirth = dob;
+    }
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    await user.update(updateData);
+    res.status(200).json(user);
   } catch (err) {
     next(err);
   }
@@ -328,7 +468,6 @@ const loginUser = async (
       return;
     }
 
-    // FIX: Cast secret to string and options to SignOptions
     const accessToken = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET as string,
@@ -429,7 +568,6 @@ const refreshToken = async (
       return;
     }
 
-    // FIX: Cast the result to include the associated user
     const tokenRecord = (await RefreshToken.findOne({
       where: {
         token: refreshToken,
@@ -445,7 +583,6 @@ const refreshToken = async (
 
     const user = tokenRecord.user;
 
-    // FIX: Cast secret to string and options to SignOptions
     const newAccessToken = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET as string,
@@ -483,4 +620,4 @@ const refreshToken = async (
   }
 };
 
-export { getUsers, createUser, loginUser, refreshToken };
+export { getUsers, createUser, loginUser, refreshToken, updateUserProfile };

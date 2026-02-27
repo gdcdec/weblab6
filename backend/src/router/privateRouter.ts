@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { requireJwt } from '@config/passport.js';
-import { getUsers, createUser } from '@controllers/userController.js';
+import {
+  getUsers,
+  createUser,
+  updateUserProfile,
+} from '@controllers/userController.js';
 import {
   createEvent,
   updateEvent,
@@ -16,5 +20,6 @@ privateRouter.put('/events/id/:eventId', requireJwt, updateEvent);
 privateRouter.delete('/events/id/:eventId', requireJwt, deleteEvent);
 privateRouter.get('/users', requireJwt, getUsers);
 privateRouter.post('/users', requireJwt, createUser);
+privateRouter.put('/users/profile', requireJwt, updateUserProfile);
 
 export { privateRouter };
