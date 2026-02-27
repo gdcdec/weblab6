@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { logout } from '../../store/slices/authSlice';
@@ -6,12 +7,22 @@ import styles from './Header.module.scss';
 
 const Header: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
+  const { user } = useAppSelector((state) => state.auth);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleLogoutConfirm = () => {
     dispatch(logout());
-    navigate('/');
+    navigate('/', { replace: true });
+    setShowLogoutModal(false);
+  };
+
+  const handleLogoutCancel = () => {
+    setShowLogoutModal(false);
   };
 
   return (
@@ -30,7 +41,10 @@ const Header: React.FC = () => {
             <Link to="/profile">
               <Button variant="outline">Profile</Button>
             </Link>
-            <Button variant="outline" onClick={handleLogout}>
+            <Link to="/events">
+              <Button variant="outline">Events</Button>
+            </Link>
+            <Button variant="outline" onClick={handleLogoutClick}>
               Logout
             </Button>
           </>
@@ -45,6 +59,24 @@ const Header: React.FC = () => {
           </>
         )}
       </nav>
+
+      {/* Logout confirmation modal */}
+      {showLogoutModal && (
+        <div className={styles.modalOverlay} onClick={handleLogoutCancel}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to log out?</p>
+            <div className={styles.modalActions}>
+              <Button variant="secondary" onClick={handleLogoutCancel}>
+                No
+              </Button>
+              <Button variant="primary" onClick={handleLogoutConfirm}>
+                Yes
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
