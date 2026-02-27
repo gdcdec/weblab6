@@ -45,10 +45,6 @@ To deploy the frontend one should follow these steps:
 - Registration
 - Authorization
 - Creation of new events
-
-
-                             WHAT DOESN'T WORK
-                             =================
-
 - Deletion of events
 - Sorting of events by date
+- Profile editing
