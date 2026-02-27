@@ -19,6 +19,9 @@ This repo is related to the web development class.
 3. Intall all dependencies specified in 'package.json':
     $ npm install
 
+4. Build the whole project:
+    $ npm build:all
+
 
                                    USAGE
                                    =====

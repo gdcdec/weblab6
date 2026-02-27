@@ -1,20 +1,28 @@
-import React from 'react';
-import {Link, useNavigate} from 'react-router-dom';
-import {useAuth} from '../../contexts/AuthContext';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { logout } from '../../store/slices/authSlice';
 import Button from '../Button/Button';
 import styles from './Header.module.scss';
 
 const Header: React.FC = () => {
-  const {user, logout} = useAuth();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { user } = useAppSelector((state) => state.auth);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogout = () => {
-    // Navigate to home first to leave any protected pages
-    navigate('/', {replace: true});
-    // Short delay ensures navigation is processed before clearing auth
-    setTimeout(() => {
-      logout();
-    }, 50);
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleLogoutConfirm = () => {
+    dispatch(logout());
+    navigate('/', { replace: true });
+    setShowLogoutModal(false);
+  };
+
+  const handleLogoutCancel = () => {
+    setShowLogoutModal(false);
   };
 
   return (
@@ -29,8 +37,14 @@ const Header: React.FC = () => {
       <nav className={styles.nav}>
         {user ? (
           <>
-            <span className={styles.user}>Hello, {user.name}</span>
-            <Button variant="outline" onClick={handleLogout}>
+            <span className={styles.user}>Hello, {user.firstName}</span>
+            <Link to="/profile">
+              <Button variant="outline">Profile</Button>
+            </Link>
+            <Link to="/events">
+              <Button variant="outline">Events</Button>
+            </Link>
+            <Button variant="outline" onClick={handleLogoutClick}>
               Logout
             </Button>
           </>
@@ -45,6 +59,23 @@ const Header: React.FC = () => {
           </>
         )}
       </nav>
+
+      {showLogoutModal && (
+        <div className={styles.modalOverlay} onClick={handleLogoutCancel}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to log out?</p>
+            <div className={styles.modalActions}>
+              <Button variant="secondary" onClick={handleLogoutCancel}>
+                No
+              </Button>
+              <Button variant="primary" onClick={handleLogoutConfirm}>
+                Yes
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

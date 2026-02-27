@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { createUser } from '@controllers/userController.js';
-import { getEvents, getEventById, getEventByCat } from '@controllers/eventController.js';
+import {
+  getEvents,
+  getEventById,
+  getEventByCat,
+} from '@controllers/eventController.js';
 
 const publicRouter = Router();
 

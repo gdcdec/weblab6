@@ -1,19 +1,25 @@
-import React, {useState, useEffect} from 'react';
-import {Link, useNavigate} from 'react-router-dom';
-import {register} from '../../api/authService';
-import {useAuth} from '../../contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { register, clearError } from '../../store/slices/authSlice';
 import Button from '../../components/Button/Button';
 import ErrorDisplay from '../../components/ErrorDisplay/ErrorDisplay';
 import styles from './Register.module.scss';
 
 const Register: React.FC = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const dispatch = useAppDispatch();
+  const { user, isLoading, error } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
-  const {user} = useAuth();
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    patronymic: '',
+    gender: 'male' as 'male' | 'female',
+    dateOfBirth: '',
+    email: '',
+    password: '',
+  });
 
   useEffect(() => {
     if (user) {
@@ -21,20 +27,18 @@ const Register: React.FC = () => {
     }
   }, [user, navigate]);
 
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    try {
-      await register({name, email, password});
+    const resultAction = await dispatch(register(formData));
+    if (register.fulfilled.match(resultAction)) {
       navigate('/login');
-    } catch (err: any) {
-      const message =
-        err.response?.data?.message || err.message || 'Registration failed';
-      setError(message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -42,47 +46,104 @@ const Register: React.FC = () => {
     <div className={styles.container}>
       <form onSubmit={handleSubmit} className={styles.form}>
         <h2>Register</h2>
-        <ErrorDisplay message={error} onClose={() => setError(null)} />
+        <ErrorDisplay message={error} onClose={() => dispatch(clearError())} />
 
         <div className={styles.field}>
-          <label htmlFor="name">Name</label>
+          <label htmlFor="firstName">First Name *</label>
           <input
             type="text"
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            id="firstName"
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleChange}
             required
-            disabled={loading}
+            disabled={isLoading}
           />
         </div>
 
         <div className={styles.field}>
-          <label htmlFor="email">Email</label>
+          <label htmlFor="lastName">Last Name *</label>
+          <input
+            type="text"
+            id="lastName"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label htmlFor="patronymic">Patronymic *</label>
+          <input
+            type="text"
+            id="patronymic"
+            name="patronymic"
+            value={formData.patronymic}
+            onChange={handleChange}
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label htmlFor="gender">Gender *</label>
+          <select
+            id="gender"
+            name="gender"
+            value={formData.gender}
+            onChange={handleChange}
+            required
+            disabled={isLoading}
+          >
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+
+        <div className={styles.field}>
+          <label htmlFor="dateOfBirth">Date of Birth *</label>
+          <input
+            type="date"
+            id="dateOfBirth"
+            name="dateOfBirth"
+            value={formData.dateOfBirth}
+            onChange={handleChange}
+            required
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label htmlFor="email">Email *</label>
           <input
             type="email"
             id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
             required
-            disabled={loading}
+            disabled={isLoading}
           />
         </div>
 
         <div className={styles.field}>
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">Password *</label>
           <input
             type="password"
             id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
             required
             minLength={6}
-            disabled={loading}
+            disabled={isLoading}
           />
         </div>
 
-        <Button type="submit" variant="primary" fullWidth disabled={loading}>
-          {loading ? 'Registering...' : 'Register'}
+        <Button type="submit" variant="primary" fullWidth disabled={isLoading}>
+          {isLoading ? 'Registering...' : 'Register'}
         </Button>
 
         <p className={styles.link}>

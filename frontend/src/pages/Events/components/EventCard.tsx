@@ -1,13 +1,14 @@
-import React, {useState, useRef, useEffect} from 'react';
-import type {Event} from '../../../types/event';
+import React, { useState, useRef, useEffect } from 'react';
+import type { Event } from '../../../types/event';
 import styles from './EventCard.module.scss';
 
 interface EventCardProps {
   event: Event;
   onDelete: (id: number) => void;
+  onEdit: (id: number) => void;
 }
 
-const EventCard: React.FC<EventCardProps> = ({event, onDelete}) => {
+const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => {
   const [isClicked, setIsClicked] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -23,6 +24,12 @@ const EventCard: React.FC<EventCardProps> = ({event, onDelete}) => {
 
   const handleCardClick = () => {
     setIsClicked((prev) => !prev);
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit(event.id);
+    setIsClicked(false); // hide buttons after action
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -42,8 +49,17 @@ const EventCard: React.FC<EventCardProps> = ({event, onDelete}) => {
       )}
       <p className={styles.date}>Date: {date}</p>
       {isClicked && (
-        <div className={styles.deleteButtonContainer}>
-          <button className={styles.deleteButton} onClick={handleDeleteClick}>
+        <div className={styles.buttonContainer}>
+          <button
+            className={`${styles.actionButton} ${styles.editButton}`}
+            onClick={handleEditClick}
+          >
+            Edit
+          </button>
+          <button
+            className={`${styles.actionButton} ${styles.deleteButton}`}
+            onClick={handleDeleteClick}
+          >
             Delete
           </button>
         </div>

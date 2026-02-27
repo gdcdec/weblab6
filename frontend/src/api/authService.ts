@@ -12,14 +12,22 @@ export interface LoginResponse {
 }
 
 export interface RegisterData {
-  name: string;
+  firstName: string;
+  lastName: string;
+  patronymic: string;
+  gender: 'male' | 'female';
+  dateOfBirth: string;
   email: string;
   password: string;
 }
 
 export interface RegisterResponse {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string;
+  patronymic: string;
+  gender: 'male' | 'female';
+  dateOfBirth: string;
   email: string;
   createdAt: string;
 }
@@ -46,7 +54,7 @@ export const register = async (
 
 export const refreshToken = async (
   refreshToken: string
-): Promise<{accessToken: string; refreshToken: string}> => {
-  const response = await axiosInstance.post('/refresh', {refreshToken});
+): Promise<{ accessToken: string; refreshToken: string }> => {
+  const response = await axiosInstance.post('/refresh', { refreshToken });
   return response.data;
 };

@@ -1,3 +1,4 @@
+// frontend/src/pages/Events/components/EventCard.module.scss
 .card {
   position: relative;
   background-color: var(--bg-dark);
@@ -38,26 +39,39 @@
   font-size: 0.9rem;
 }
 
-.deleteButtonContainer {
+.buttonContainer {
   position: absolute;
   bottom: 1rem;
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
-  pointer-events: none; // allow clicks to pass through to the card
+  gap: 1rem;
+  pointer-events: none;
+}
+
+.actionButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+  pointer-events: auto;
+}
+
+.editButton {
+  background-color: var(--blue);
+  color: white;
+
+  &:hover {
+    background-color: #5f7ab3;
+  }
 }
 
 .deleteButton {
   background-color: var(--red);
   color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s;
-  pointer-events: auto; // make the button clickable
 
   &:hover {
     background-color: #a05a55;

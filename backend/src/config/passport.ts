@@ -1,4 +1,8 @@
-import { Strategy as JwtStrategy, ExtractJwt, StrategyOptions } from 'passport-jwt';
+import {
+  Strategy as JwtStrategy,
+  ExtractJwt,
+  StrategyOptions,
+} from 'passport-jwt';
 import passport from 'passport';
 import User from '@models/userModel.js';
 import dotenv from 'dotenv';
@@ -27,21 +31,25 @@ passport.use(
 );
 
 const requireJwt = (req: Request, res: Response, next: NextFunction): void => {
-  passport.authenticate('jwt', { session: false }, (err: unknown, user: Express.User | false) => {
-    if (err) {
-      console.error(err);
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      return res.status(500).json({
-        message: 'Authentication error',
-        error: message, // ← now using the safe message variable
-      });
+  passport.authenticate(
+    'jwt',
+    { session: false },
+    (err: unknown, user: Express.User | false) => {
+      if (err) {
+        console.error(err);
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        return res.status(500).json({
+          message: 'Authentication error',
+          error: message, // ← now using the safe message variable
+        });
+      }
+      if (!user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      req.user = user;
+      next();
     }
-    if (!user) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    req.user = user;
-    next();
-  })(req, res, next);
+  )(req, res, next);
 };
 
 export { passport, requireJwt };

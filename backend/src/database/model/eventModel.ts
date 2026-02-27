@@ -23,9 +23,12 @@ interface EventAttributes {
   updatedAt?: Date;
 }
 
-interface EventCreationAttributes extends Optional<EventAttributes, 'id'> {}
+type EventCreationAttributes = Optional<EventAttributes, 'id'>;
 
-class Event extends Model<EventAttributes, EventCreationAttributes> implements EventAttributes {
+class Event
+  extends Model<EventAttributes, EventCreationAttributes>
+  implements EventAttributes
+{
   public id!: number;
   public title!: string;
   public description!: string | null;

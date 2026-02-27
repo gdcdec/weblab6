@@ -28,7 +28,11 @@ const options: Options = {
   },
   // Path to the API docs
   // Note: update these paths to match your TypeScript source files
-  apis: ['src/controller/*.ts', 'src/database/model/*.ts', 'src/config/swagger.ts'],
+  apis: [
+    'src/controller/*.ts',
+    'src/database/model/*.ts',
+    'src/config/swagger.ts',
+  ],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

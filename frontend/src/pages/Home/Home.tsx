@@ -1,11 +1,11 @@
 import React from 'react';
-import {Link} from 'react-router-dom';
-import {useAuth} from '../../contexts/AuthContext';
+import { Link } from 'react-router-dom';
+import { useAppSelector } from '../../store/hooks';
 import Button from '../../components/Button/Button';
 import styles from './Home.module.scss';
 
 const Home: React.FC = () => {
-  const {user} = useAuth();
+  const user = useAppSelector((state) => state.auth.user);
 
   return (
     <div className={styles.home}>

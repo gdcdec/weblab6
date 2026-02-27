@@ -1,5 +1,5 @@
 import axiosInstance from './axios';
-import type {Event} from '../types/event';
+import type { Event } from '../types/event';
 
 export const getEvents = async (): Promise<Event[]> => {
   const response = await axiosInstance.get<Event[]>('/events');
@@ -27,4 +27,20 @@ export const createEvent = async (
 
 export const deleteEvent = async (id: number): Promise<void> => {
   await axiosInstance.delete(`/events/id/${id}`);
+};
+
+export const updateEvent = async (
+  id: number,
+  eventData: Partial<Omit<Event, 'id' | 'createdAt' | 'updatedAt'>>
+): Promise<Event> => {
+  const response = await axiosInstance.put<Event>(
+    `/events/id/${id}`,
+    eventData
+  );
+  return response.data;
+};
+
+export const getMyEvents = async (): Promise<Event[]> => {
+  const response = await axiosInstance.get<Event[]>('/events/my');
+  return response.data;
 };

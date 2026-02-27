@@ -4,17 +4,28 @@ import bcrypt from 'bcryptjs';
 
 export interface UserAttributes {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string;
+  patronymic: string;
+  gender: 'male' | 'female';
+  dateOfBirth: Date;
   email: string;
   password: string;
   createdAt?: Date;
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, 'id'> {}
+type UserCreationAttributes = Optional<UserAttributes, 'id'>;
 
-class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
+class User
+  extends Model<UserAttributes, UserCreationAttributes>
+  implements UserAttributes
+{
   public id!: number;
-  public name!: string;
+  public firstName!: string;
+  public lastName!: string;
+  public patronymic!: string;
+  public gender!: 'male' | 'female';
+  public dateOfBirth!: Date;
   public email!: string;
   public password!: string;
   public createdAt!: Date;
@@ -26,49 +37,41 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
  *   schemas:
  *     users:
  *       type: object
- *       description: User entity representing a person in the system
+ *       description: User entity
  *       required:
- *         - name
+ *         - firstName
+ *         - lastName
+ *         - patronymic
+ *         - gender
+ *         - dateOfBirth
  *         - email
  *         - password
  *       properties:
  *         id:
  *           type: integer
- *           format: int64
- *           minimum: 0
- *           description: Auto-incremented unique identifier for the user
- *           example: 1
  *           readOnly: true
- *         name:
+ *         firstName:
  *           type: string
- *           description: Full name of the user
- *           minLength: 1
- *           maxLength: 255
- *           example: "John Doe"
+ *         lastName:
+ *           type: string
+ *         patronymic:
+ *           type: string
+ *         gender:
+ *           type: string
+ *           enum: [male, female]
+ *         dateOfBirth:
+ *           type: string
+ *           format: date
  *         email:
  *           type: string
  *           format: email
- *           description: Unique email address of the user
- *           maxLength: 255
- *           example: "john.doe@example.com"
  *         password:
  *           type: string
- *           format: password
- *           description: User's password (will be hashed before storage)
- *           example: "MySecurePassword123!"
- *           minLength: 6
  *           writeOnly: true
  *         createdAt:
  *           type: string
  *           format: date-time
- *           description: Timestamp when the user was created
- *           example: "2023-01-01T10:00:00.000Z"
  *           readOnly: true
- *       example:
- *         id: 1
- *         name: "John Doe"
- *         email: "john.doe@example.com"
- *         createdAt: "2023-01-01T10:00:00.000Z"
  */
 User.init(
   {
@@ -79,8 +82,24 @@ User.init(
       autoIncrement: true,
       allowNull: false,
     },
-    name: {
+    firstName: {
       type: DataTypes.STRING,
+      allowNull: false,
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    patronymic: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    gender: {
+      type: DataTypes.ENUM('male', 'female'),
+      allowNull: false,
+    },
+    dateOfBirth: {
+      type: DataTypes.DATEONLY,
       allowNull: false,
     },
     email: {

@@ -6,15 +6,20 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "clean": "rm -rf node_modules yarn.lock"
+    "clean": "rm -rf dist/ node_modules/ yarn.lock"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.13.5",
     "classnames": "^2.5.1",
     "jwt-decode": "^4.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-router-dom": "^7.13.1"
+    "react-hook-form": "^7.71.2",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.13.1",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
