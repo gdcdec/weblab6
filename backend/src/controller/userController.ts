@@ -98,7 +98,11 @@ interface RefreshBody {
  *             example:
  *               message: "An unexpected error occurred"
  */
-const createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const createUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { name, email, password } = req.body as RegisterBody;
     if (!name || !email || !password) {
@@ -113,7 +117,9 @@ const createUser = async (req: Request, res: Response, next: NextFunction): Prom
     }
 
     if (password.length < 6) {
-      res.status(400).json({ message: 'Password must be at least 6 characters long' });
+      res
+        .status(400)
+        .json({ message: 'Password must be at least 6 characters long' });
       return;
     }
 
@@ -209,7 +215,11 @@ const createUser = async (req: Request, res: Response, next: NextFunction): Prom
  *             example:
  *               message: "An unexpected error occurred"
  */
-const getUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const getUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const users = await User.findAll({
       attributes: ['id', 'name', 'email', 'createdAt'],
@@ -294,7 +304,11 @@ const getUsers = async (req: Request, res: Response, next: NextFunction): Promis
  *             example:
  *               message: "An unexpected error occurred"
  */
-const loginUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const loginUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { email, password } = req.body as LoginBody;
     if (!email || !password) {
@@ -324,7 +338,8 @@ const loginUser = async (req: Request, res: Response, next: NextFunction): Promi
     const refreshToken = crypto.randomBytes(40).toString('hex');
     const refreshExpiry = new Date();
     refreshExpiry.setDate(
-      refreshExpiry.getDate() + (parseInt(process.env.REFRESH_TOKEN_DAYS as string, 10) || 7)
+      refreshExpiry.getDate() +
+        (parseInt(process.env.REFRESH_TOKEN_DAYS as string, 10) || 7)
     );
 
     await RefreshToken.create({
@@ -402,7 +417,11 @@ const loginUser = async (req: Request, res: Response, next: NextFunction): Promi
  *             example:
  *               message: "An unexpected error occurred"
  */
-const refreshToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const refreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { refreshToken } = req.body as RefreshBody;
     if (!refreshToken) {
@@ -436,11 +455,15 @@ const refreshToken = async (req: Request, res: Response, next: NextFunction): Pr
     const newRefreshToken = crypto.randomBytes(40).toString('hex');
     const newExpiry = new Date();
     newExpiry.setDate(
-      newExpiry.getDate() + (parseInt(process.env.REFRESH_TOKEN_DAYS as string, 10) || 7)
+      newExpiry.getDate() +
+        (parseInt(process.env.REFRESH_TOKEN_DAYS as string, 10) || 7)
     );
 
     await sequelize.transaction(async (t) => {
-      await RefreshToken.destroy({ where: { id: tokenRecord.id }, transaction: t });
+      await RefreshToken.destroy({
+        where: { id: tokenRecord.id },
+        transaction: t,
+      });
       await RefreshToken.create(
         {
           userId: tokenRecord.userId,

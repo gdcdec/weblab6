@@ -10,10 +10,10 @@ interface RefreshTokenAttributes {
   createdAt: Date;
 }
 
-interface RefreshTokenCreationAttributes extends Optional<
+type RefreshTokenCreationAttributes = Optional<
   RefreshTokenAttributes,
   'id' | 'createdAt'
-> {}
+>;
 
 class RefreshToken
   extends Model<RefreshTokenAttributes, RefreshTokenCreationAttributes>

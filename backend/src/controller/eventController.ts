@@ -41,7 +41,11 @@ interface EventBody {
  *             example:
  *               message: "An unexpected error occurred"
  */
-const getEvents = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const getEvents = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const events = await eventModel.findAll();
     res.status(200).json(events);
@@ -165,7 +169,9 @@ const getEventByCat = async (
     });
 
     if (!events.length) {
-      res.status(400).json({ message: `Events with category '${eventCat}' not found` });
+      res
+        .status(400)
+        .json({ message: `Events with category '${eventCat}' not found` });
       return;
     }
 
@@ -263,9 +269,14 @@ const getEventByCat = async (
  *             example:
  *               message: "An unexpected error occurred"
  */
-const createEvent = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const createEvent = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const { title, description, date, createdBy, category } = req.body as EventBody;
+    const { title, description, date, createdBy, category } =
+      req.body as EventBody;
     const dailyLimit = parseInt(process.env.DAILY_LIMIT as string, 10);
 
     if (!title || !date || !createdBy || !category) {
@@ -400,7 +411,8 @@ const updateEvent = async (
 ): Promise<void> => {
   try {
     const { eventId } = req.params;
-    const { title, description, date, createdBy, category } = req.body as EventBody;
+    const { title, description, date, createdBy, category } =
+      req.body as EventBody;
 
     let eventDate: Date | null = null;
     if (date) {
@@ -486,4 +498,51 @@ const deleteEvent = async (
   }
 };
 
-export { getEvents, getEventById, getEventByCat, createEvent, updateEvent, deleteEvent };
+/**
+ * @swagger
+ * /events/my:
+ *   get:
+ *     tags: [Private]
+ *     summary: Get events created by the authenticated user
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of user's events
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/events'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+const getMyEvents = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = (req.user as { id: number }).id; // from passport
+    const events = await eventModel.findAll({
+      where: { createdBy: userId },
+      include: [{ model: User, attributes: ['id', 'name'] }],
+    });
+    res.status(200).json(events);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export {
+  getEvents,
+  getEventById,
+  getEventByCat,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  getMyEvents,
+};

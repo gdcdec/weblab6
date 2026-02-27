@@ -1,197 +1,152 @@
-import React, {useEffect, useState, useMemo} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {getEvents, createEvent, deleteEvent} from '../../api/eventService';
-import {useAuth} from '../../contexts/AuthContext';
+import React, { useEffect, useState } from 'react';
+import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import {
+  fetchEvents,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  setFilter,
+  clearError,
+} from '../../store/slices/eventsSlice';
+import type { DateFilter } from '../../store/slices/eventsSlice'; // ← type-only import
 import EventCard from './components/EventCard';
+import EventForm from '../../components/EventForm/EventForm';
+import type { EventFormValues } from '../../components/EventForm/EventForm'; // ← type-only import
 import Button from '../../components/Button/Button';
+import Loading from '../../components/Loading/Loading';
 import ErrorDisplay from '../../components/ErrorDisplay/ErrorDisplay';
 import styles from './Events.module.scss';
-import type {Event} from '../../types/event';
-
-type DateFilter = 'all' | 'today' | 'week' | 'month';
-
-// Helper to extract error message from unknown error
-const getErrorMessage = (error: unknown): string => {
-  if (error && typeof error === 'object' && 'response' in error) {
-    const err = error as any;
-    return err.response?.data?.message || err.message || 'An error occurred';
-  }
-  if (error instanceof Error) return error.message;
-  return 'An unexpected error occurred';
-};
+import type { Event } from '../../types/event'; // ← type-only import
 
 const Events: React.FC = () => {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useAppDispatch();
+  const { events, loading, error, filter } = useAppSelector(
+    (state) => state.events
+  );
+  const { user } = useAppSelector((state) => state.auth);
   const [modalOpen, setModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [eventToDelete, setEventToDelete] = useState<number | null>(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    date: '',
-    category: 'education' as const,
-  });
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [dateFilter, setDateFilter] = useState<DateFilter>('all');
-  const navigate = useNavigate();
-  const {user, isLoading: authLoading} = useAuth();
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/login');
-      return;
-    }
+    dispatch(fetchEvents());
+  }, [dispatch]);
 
-    if (user) {
-      fetchEvents();
-    }
-  }, [user, authLoading, navigate]);
+  const openCreateModal = () => {
+    setEditingEvent(null);
+    setModalOpen(true);
+  };
 
-  const fetchEvents = async () => {
-    try {
-      const data = await getEvents();
-      setEvents(data);
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
+  const openEditModal = (id: number) => {
+    const event = events.find((e) => e.id === id);
+    if (event) {
+      setEditingEvent(event);
+      setModalOpen(true);
     }
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
-    const {name, value} = e.target;
-    setFormData((prev) => ({...prev, [name]: value}));
+  const closeModal = () => {
+    setModalOpen(false);
+    setEditingEvent(null);
   };
 
-  const handleCreateEvent = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFormSubmit = async (data: EventFormValues) => {
     if (!user) return;
     setSubmitting(true);
     try {
-      const dateIso = new Date(formData.date).toISOString();
-      await createEvent({
-        title: formData.title,
-        description: formData.description || null,
-        date: dateIso,
-        category: formData.category,
+      // Convert empty description to null for API
+      const payload = {
+        ...data,
+        description: data.description || null,
         createdBy: user.id,
-      });
-      setModalOpen(false);
-      setFormData({
-        title: '',
-        description: '',
-        date: '',
-        category: 'education',
-      });
-      fetchEvents();
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
+      };
+
+      if (editingEvent) {
+        await dispatch(
+          updateEvent({ id: editingEvent.id, data: payload })
+        ).unwrap();
+      } else {
+        await dispatch(createEvent(payload)).unwrap();
+      }
+      closeModal();
+    } catch {
+      // error handled in slice
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDeleteClick = (id: number) => {
-    setEventToDelete(id);
-    setDeleteModalOpen(true);
+    setDeleteId(id);
   };
 
   const confirmDelete = async () => {
-    if (!eventToDelete) return;
+    if (!deleteId) return;
     setSubmitting(true);
     try {
-      await deleteEvent(eventToDelete);
-      setDeleteModalOpen(false);
-      setEventToDelete(null);
-      fetchEvents();
-    } catch (err: unknown) {
-      setError(getErrorMessage(err));
-      setDeleteModalOpen(false);
+      await dispatch(deleteEvent(deleteId)).unwrap();
+      setDeleteId(null);
+    } catch {
+      // error handled
     } finally {
       setSubmitting(false);
     }
   };
 
-  const cancelDelete = () => {
-    setDeleteModalOpen(false);
-    setEventToDelete(null);
-  };
+  const cancelDelete = () => setDeleteId(null);
 
-  // Date filter logic – fixed no-case-declarations by using {}
-  const filteredEvents = useMemo(() => {
-    if (dateFilter === 'all') return events;
-
+  // Filter events based on selected filter
+  const filteredEvents = (() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
     return events.filter((event) => {
       const eventDate = new Date(event.date);
-      switch (dateFilter) {
-        case 'today': {
-          const tomorrow = new Date(today.getTime() + 86400000);
-          return eventDate >= today && eventDate < tomorrow;
-        }
-        case 'week': {
-          const weekAgo = new Date(today.getTime() - 7 * 86400000);
-          return eventDate >= weekAgo;
-        }
-        case 'month': {
-          const monthAgo = new Date(today.getTime() - 30 * 86400000);
-          return eventDate >= monthAgo;
-        }
+      switch (filter) {
+        case 'today':
+          return (
+            eventDate >= today &&
+            eventDate < new Date(today.getTime() + 86400000)
+          );
+        case 'week':
+          return eventDate >= new Date(today.getTime() - 7 * 86400000);
+        case 'month':
+          return eventDate >= new Date(today.getTime() - 30 * 86400000);
         default:
           return true;
       }
     });
-  }, [events, dateFilter]);
+  })();
 
-  if (authLoading)
-    return <div className={styles.loading}>Checking authentication...</div>;
-  if (loading) return <div className={styles.loading}>Loading events...</div>;
+  if (loading && !events.length) return <Loading />;
 
   return (
     <div className={styles.events}>
       <h1>Events</h1>
-      <ErrorDisplay message={error} onClose={() => setError(null)} />
+      <ErrorDisplay message={error} onClose={() => dispatch(clearError())} />
 
-      {events.length > 0 && (
-        <div className={styles.controls}>
-          <div className={styles.filter}>
-            <label htmlFor="dateFilter">Show: </label>
-            <select
-              id="dateFilter"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-              disabled={submitting}
-            >
-              <option value="all">All</option>
-              <option value="today">Today</option>
-              <option value="week">This week</option>
-              <option value="month">This month</option>
-            </select>
-          </div>
-          <Button variant="primary" onClick={() => setModalOpen(true)}>
-            New event
-          </Button>
+      <div className={styles.controls}>
+        <div className={styles.filter}>
+          <label htmlFor="filter">Show: </label>
+          <select
+            id="filter"
+            value={filter}
+            onChange={(e) => dispatch(setFilter(e.target.value as DateFilter))}
+          >
+            <option value="all">All</option>
+            <option value="today">Today</option>
+            <option value="week">This week</option>
+            <option value="month">This month</option>
+          </select>
         </div>
-      )}
+        <Button variant="primary" onClick={openCreateModal}>
+          New Event
+        </Button>
+      </div>
 
-      {events.length === 0 ? (
+      {filteredEvents.length === 0 ? (
         <div className={styles.emptyState}>
-          <p className={styles.emptyMessage}>Events. No any</p>
-          <Button variant="primary" onClick={() => setModalOpen(true)}>
-            New event
-          </Button>
-        </div>
-      ) : filteredEvents.length === 0 ? (
-        <div className={styles.noMatch}>
-          No events match the selected filter.
+          <p>No events found.</p>
         </div>
       ) : (
         <div className={styles.grid}>
@@ -200,97 +155,44 @@ const Events: React.FC = () => {
               key={event.id}
               event={event}
               onDelete={handleDeleteClick}
+              onEdit={openEditModal}
             />
           ))}
         </div>
       )}
 
-      {/* Create Event Modal */}
+      {/* Create/Edit Modal */}
       {modalOpen && (
-        <div
-          className={styles.modalOverlay}
-          onClick={() => setModalOpen(false)}
-        >
+        <div className={styles.modalOverlay} onClick={closeModal}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h3>Create New Event</h3>
-            <form onSubmit={handleCreateEvent}>
-              <div className={styles.field}>
-                <label htmlFor="title">Title *</label>
-                <input
-                  type="text"
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  required
-                  disabled={submitting}
-                />
-              </div>
-              <div className={styles.field}>
-                <label htmlFor="description">Description</label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  disabled={submitting}
-                />
-              </div>
-              <div className={styles.field}>
-                <label htmlFor="date">Date & Time *</label>
-                <input
-                  type="datetime-local"
-                  id="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  required
-                  disabled={submitting}
-                />
-              </div>
-              <div className={styles.field}>
-                <label htmlFor="category">Category *</label>
-                <select
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  required
-                  disabled={submitting}
-                >
-                  <option value="education">Education</option>
-                  <option value="amusement">Amusement</option>
-                  <option value="work">Work</option>
-                  <option value="hobby">Hobby</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div className={styles.modalActions}>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setModalOpen(false)}
-                  disabled={submitting}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" variant="primary" disabled={submitting}>
-                  {submitting ? 'Creating...' : 'Create'}
-                </Button>
-              </div>
-            </form>
+            <h3>{editingEvent ? 'Edit Event' : 'Create Event'}</h3>
+            <EventForm
+              initialValues={
+                editingEvent
+                  ? {
+                      title: editingEvent.title,
+                      description: editingEvent.description || '',
+                      date: editingEvent.date,
+                      category: editingEvent.category,
+                    }
+                  : undefined
+              }
+              onSubmit={handleFormSubmit}
+              onCancel={closeModal}
+              isSubmitting={submitting}
+            />
           </div>
         </div>
       )}
 
       {/* Delete Confirmation Modal */}
-      {deleteModalOpen && (
+      {deleteId && (
         <div className={styles.modalOverlay} onClick={cancelDelete}>
           <div
             className={`${styles.modal} ${styles.deleteModal}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3>Confirm Deletion</h3>
+            <h3>Confirm Delete</h3>
             <p>Are you sure you want to delete this event?</p>
             <div className={styles.modalActions}>
               <Button

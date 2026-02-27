@@ -1,20 +1,17 @@
-import React from 'react';
-import {Link, useNavigate} from 'react-router-dom';
-import {useAuth} from '../../contexts/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { logout } from '../../store/slices/authSlice';
 import Button from '../Button/Button';
 import styles from './Header.module.scss';
 
 const Header: React.FC = () => {
-  const {user, logout} = useAuth();
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Navigate to home first to leave any protected pages
-    navigate('/', {replace: true});
-    // Short delay ensures navigation is processed before clearing auth
-    setTimeout(() => {
-      logout();
-    }, 50);
+    dispatch(logout());
+    navigate('/');
   };
 
   return (
@@ -30,6 +27,9 @@ const Header: React.FC = () => {
         {user ? (
           <>
             <span className={styles.user}>Hello, {user.name}</span>
+            <Link to="/profile">
+              <Button variant="outline">Profile</Button>
+            </Link>
             <Button variant="outline" onClick={handleLogout}>
               Logout
             </Button>

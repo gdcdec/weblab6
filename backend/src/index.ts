@@ -36,6 +36,8 @@ app.listen(DefaultHttpPortNumber, (err?: Error) => {
   if (err) {
     console.error(`Port ${DefaultHttpPortNumber} is busy`);
   } else {
-    console.log(`Server is running on http://localhost:${DefaultHttpPortNumber}`);
+    console.log(
+      `Server is running on http://localhost:${DefaultHttpPortNumber}`
+    );
   }
 });

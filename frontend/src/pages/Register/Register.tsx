@@ -1,19 +1,18 @@
-import React, {useState, useEffect} from 'react';
-import {Link, useNavigate} from 'react-router-dom';
-import {register} from '../../api/authService';
-import {useAuth} from '../../contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { register, clearError } from '../../store/slices/authSlice';
 import Button from '../../components/Button/Button';
 import ErrorDisplay from '../../components/ErrorDisplay/ErrorDisplay';
 import styles from './Register.module.scss';
 
 const Register: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const { user, isLoading, error } = useAppSelector((state) => state.auth);
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const {user} = useAuth();
 
   useEffect(() => {
     if (user) {
@@ -23,18 +22,9 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    try {
-      await register({name, email, password});
+    const resultAction = await dispatch(register({ name, email, password }));
+    if (register.fulfilled.match(resultAction)) {
       navigate('/login');
-    } catch (err: any) {
-      const message =
-        err.response?.data?.message || err.message || 'Registration failed';
-      setError(message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -42,7 +32,7 @@ const Register: React.FC = () => {
     <div className={styles.container}>
       <form onSubmit={handleSubmit} className={styles.form}>
         <h2>Register</h2>
-        <ErrorDisplay message={error} onClose={() => setError(null)} />
+        <ErrorDisplay message={error} onClose={() => dispatch(clearError())} />
 
         <div className={styles.field}>
           <label htmlFor="name">Name</label>
@@ -52,7 +42,7 @@ const Register: React.FC = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            disabled={loading}
+            disabled={isLoading}
           />
         </div>
 
@@ -64,7 +54,7 @@ const Register: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            disabled={loading}
+            disabled={isLoading}
           />
         </div>
 
@@ -77,12 +67,12 @@ const Register: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            disabled={loading}
+            disabled={isLoading}
           />
         </div>
 
-        <Button type="submit" variant="primary" fullWidth disabled={loading}>
-          {loading ? 'Registering...' : 'Register'}
+        <Button type="submit" variant="primary" fullWidth disabled={isLoading}>
+          {isLoading ? 'Registering...' : 'Register'}
         </Button>
 
         <p className={styles.link}>
